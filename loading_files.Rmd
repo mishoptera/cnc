@@ -1,0 +1,90 @@
+---
+title: "Process observations"
+author: "Misha Leong"
+date: "May 1, 2018"
+output: html_document
+---
+
+```{r loading files}
+library(tidyverse)
+library(ggmap)
+library(rgdal)
+library(sp)
+
+# for 2016 data
+sf <- read.csv("cnc_2016_sf.csv")
+la <- read.csv("cnc_2016_la.csv")
+sf_temp <- sf %>% mutate(hometown = "sf")
+la_temp <- la %>% mutate(hometown = "la")
+cal_2016 <- bind_rows(sf_temp, la_temp)
+
+# for 2017 data. doing raster in point was such a mess, I went through and just manually downloaded each project :/
+austin <- read.csv("cnc_2017_Austin.csv")
+austin_temp <- austin %>% mutate(hometown = "austin")
+boston <- read.csv("cnc_2017_Boston.csv")
+boston_temp <- boston %>% mutate(hometown = "boston")
+chicago <- read.csv("cnc_2017_chicago.csv")
+chicago_temp <- chicago %>% mutate(hometown = "chicago")
+houston <- read.csv("cnc_2017_houston.csv")
+houston_temp <- houston %>% mutate(hometown = "houston")
+losangeles <- read.csv("cnc_2017_losangeles.csv")
+losangeles_temp <- losangeles %>% mutate(hometown = "losangeles")
+miami <- read.csv("cnc_2017_miami.csv")
+miami_temp <- miami %>% mutate(hometown = "miami")
+minneapolis <- read.csv("cnc_2017_minneapolis.csv")
+minneapolis_temp <- minneapolis %>% mutate(hometown = "minneapolis")
+nashville <- read.csv("cnc_2017_nashville.csv")
+nashville_temp <- nashville %>% mutate(hometown = "nashville")
+newyork <- read.csv("cnc_2017_newyork.csv")
+newyork_temp <- newyork %>% mutate(hometown = "newyork")
+raleigh <- read.csv("cnc_2017_raleigh.csv")
+raleigh_temp <- raleigh %>% mutate(hometown = "raleigh")
+saltlakecity <- read.csv("cnc_2017_saltlakecity.csv")
+saltlakecity_temp <- saltlakecity %>% mutate(hometown = "saltlakecity")
+seattle <- read.csv("cnc_2017_seattle.csv")
+seattle_temp <- seattle %>% mutate(hometown = "seattle")
+washingtondc <- read.csv("cnc_2017_washingtondc.csv")
+washingtondc_temp <- washingtondc %>% mutate(hometown = "washingtondc")
+sanfrancisco <- read.csv("cnc_2017_sanfrancisco.csv")
+sanfrancisco_temp <- sanfrancisco %>% mutate(hometown = "sanfrancisco")
+dallas <- read.csv("cnc_2017_dallas.csv")
+dallas_temp <- dallas %>% mutate(hometown = "dallas")
+
+# raster data
+NLCD_Austin <- raster("Austin_NLCD_2011_landcover.tif")
+NLCD_Boston <- raster("Boston_NLCD_2011_landcover.tif")
+NLCD_Chicago <- raster("Chicago_NLCD_2011_landcover.tif")
+NLCD_Dallas <- raster("Dallas_NLCD_2011_landcover.tif")
+NLCD_Houston <- raster("Houston_NLCD_2011_landcover.tif")
+NLCD_LosAngeles <- raster("LosAngeles_NLCD_2011_landcover.tif")
+NLCD_Miami <- raster("Miami_NLCD_2011_landcover.tif")
+NLCD_Minneapolis <- raster("Minneapolis_NLCD_2011_landcover.tif")
+NLCD_Nashville <- raster("Nashville_NLCD_2011_landcover.tif")
+NLCD_NewYork <- raster("NewYork_NLCD_2011_landcover.tif")
+NLCD_Raleigh <- raster("Raleigh_NLCD_2011_landcover.tif")
+NLCD_SaltLakeCity <- raster("SaltLakeCity_NLCD_2011_landcover.tif")
+NLCD_SanFrancisco <- raster("SanFrancisco_NLCD_2011_landcover.tif")
+NLCD_Seattle <- raster("Seattle_NLCD_2011_landcover.tif")
+NLCD_WashingtonDC <- raster("WashingtonDC_NLCD_2011_landcover.tif")
+
+```
+
+## Next Steps
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
