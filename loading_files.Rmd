@@ -77,9 +77,9 @@ Am I really going to process and download all of the 2018 data manually?
 summary(cars)
 ```
 
-## Including Plots
+## Then do some cool analyses here
 
-You can also embed plots, for example:
+okay!
 
 ```{r pressure, echo=FALSE}
 plot(pressure)
