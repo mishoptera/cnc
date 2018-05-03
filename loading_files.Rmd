@@ -1,5 +1,5 @@
 ---
-title: "Process observations"
+title: "Get all observations into one workable file"
 author: "Misha Leong"
 date: "May 1, 2018"
 output: html_document
@@ -11,70 +11,49 @@ library(ggmap)
 library(rgdal)
 library(sp)
 
-# for 2016 data
-sf <- read.csv("cnc_2016_sf.csv")
-la <- read.csv("cnc_2016_la.csv")
-sf_temp <- sf %>% mutate(hometown = "sf")
-la_temp <- la %>% mutate(hometown = "la")
-cal_2016 <- bind_rows(sf_temp, la_temp)
+# 2016 data
+all2016 <- read.csv(("all2016.csv"))
 
-# for 2017 data. doing raster in point was such a mess, I went through and just manually downloaded each project :/
-austin <- read.csv("cnc_2017_Austin.csv")
-austin_temp <- austin %>% mutate(hometown = "austin")
-boston <- read.csv("cnc_2017_Boston.csv")
-boston_temp <- boston %>% mutate(hometown = "boston")
-chicago <- read.csv("cnc_2017_chicago.csv")
-chicago_temp <- chicago %>% mutate(hometown = "chicago")
-houston <- read.csv("cnc_2017_houston.csv")
-houston_temp <- houston %>% mutate(hometown = "houston")
-losangeles <- read.csv("cnc_2017_losangeles.csv")
-losangeles_temp <- losangeles %>% mutate(hometown = "losangeles")
-miami <- read.csv("cnc_2017_miami.csv")
-miami_temp <- miami %>% mutate(hometown = "miami")
-minneapolis <- read.csv("cnc_2017_minneapolis.csv")
-minneapolis_temp <- minneapolis %>% mutate(hometown = "minneapolis")
-nashville <- read.csv("cnc_2017_nashville.csv")
-nashville_temp <- nashville %>% mutate(hometown = "nashville")
-newyork <- read.csv("cnc_2017_newyork.csv")
-newyork_temp <- newyork %>% mutate(hometown = "newyork")
-raleigh <- read.csv("cnc_2017_raleigh.csv")
-raleigh_temp <- raleigh %>% mutate(hometown = "raleigh")
-saltlakecity <- read.csv("cnc_2017_saltlakecity.csv")
-saltlakecity_temp <- saltlakecity %>% mutate(hometown = "saltlakecity")
-seattle <- read.csv("cnc_2017_seattle.csv")
-seattle_temp <- seattle %>% mutate(hometown = "seattle")
-washingtondc <- read.csv("cnc_2017_washingtondc.csv")
-washingtondc_temp <- washingtondc %>% mutate(hometown = "washingtondc")
-sanfrancisco <- read.csv("cnc_2017_sanfrancisco.csv")
-sanfrancisco_temp <- sanfrancisco %>% mutate(hometown = "sanfrancisco")
-dallas <- read.csv("cnc_2017_dallas.csv")
-dallas_temp <- dallas %>% mutate(hometown = "dallas")
+# 2017 data minus salt lake city and duluth
+all2017 <- read.csv(("all2017.csv"))
 
-# raster data
-NLCD_Austin <- raster("Austin_NLCD_2011_landcover.tif")
-NLCD_Boston <- raster("Boston_NLCD_2011_landcover.tif")
-NLCD_Chicago <- raster("Chicago_NLCD_2011_landcover.tif")
-NLCD_Dallas <- raster("Dallas_NLCD_2011_landcover.tif")
-NLCD_Houston <- raster("Houston_NLCD_2011_landcover.tif")
-NLCD_LosAngeles <- raster("LosAngeles_NLCD_2011_landcover.tif")
-NLCD_Miami <- raster("Miami_NLCD_2011_landcover.tif")
-NLCD_Minneapolis <- raster("Minneapolis_NLCD_2011_landcover.tif")
-NLCD_Nashville <- raster("Nashville_NLCD_2011_landcover.tif")
-NLCD_NewYork <- raster("NewYork_NLCD_2011_landcover.tif")
-NLCD_Raleigh <- raster("Raleigh_NLCD_2011_landcover.tif")
-NLCD_SaltLakeCity <- raster("SaltLakeCity_NLCD_2011_landcover.tif")
-NLCD_SanFrancisco <- raster("SanFrancisco_NLCD_2011_landcover.tif")
-NLCD_Seattle <- raster("Seattle_NLCD_2011_landcover.tif")
-NLCD_WashingtonDC <- raster("WashingtonDC_NLCD_2011_landcover.tif")
+# Eventually add 2018 data here
+
+# I even made a goddamn nlcd legend myself
+nlcd_legend <- read.csv("nlcd_legend.csv")
+
 
 ```
 
-## Next Steps
+## Next Steps to put it all in one file
+```{r}
+# If I need to directly compare the 2016 and 2017 datasets, need to be aware that I can't do a direct rbind. For some reason I downloaded kingdom and phylum data for 2016 but not 2017, and I downloaded gneus data for 2017 but not 2016, so I'll just eliminate all of those columns when I put it together.  Genus data is in scientific name column anyway
 
-Am I really going to process and download all of the 2018 data manually?
+all6 <- all2016 %>%
+  mutate(year = 2016) %>%
+  select(-taxon_kingdom_name) %>%
+  select(-taxon_phylum_name)
 
-```{r faster way to download inat data}
-summary(cars)
+all7 <- all2017 %>%
+  mutate(year = 2017) %>%
+  select(-taxon_genus_name)
+
+#adjust 2018 data here appropriately
+
+all <- bind_rows(all6,all7)
+
+```
+
+
+```{r filter data to useful georeferencing coordinates}
+all_filtered <- all %>%
+  filter(coordinates_obscured == "false")
+  
+```
+
+
+```{r save this file for future use}
+write.csv(all_filtered, "all_master.csv")
 ```
 
 ## Then do some cool analyses here
