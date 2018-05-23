@@ -17,7 +17,8 @@ all2016 <- read.csv(("all2016.csv"))
 # 2017 data minus salt lake city and duluth
 all2017 <- read.csv(("all2017.csv"))
 
-# Eventually add 2018 data here
+# has salt lake city but no nashville
+all2018 <- read.csv(("all2018.csv"))
 
 # I even made a goddamn nlcd legend myself
 nlcd_legend <- read.csv("nlcd_legend.csv")
