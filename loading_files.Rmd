@@ -34,35 +34,18 @@ all6 <- all2016 %>%
   mutate(year = 2016) %>%
   select(-taxon_kingdom_name) %>%
   select(-taxon_phylum_name)
+all6$hometown <- as.factor(all6$hometown)
 
 all7 <- all2017 %>%
   mutate(year = 2017) %>%
   select(-taxon_genus_name)
 
-#adjust 2018 data here appropriately
+all8 <- all2018 %>%
+  mutate(year = 2018)
 
-all <- bind_rows(all6,all7)
+all <- bind_rows(all6, all7,all8)
 
 ```
-
-
-```{r filter data to useful georeferencing coordinates}
-all_filtered <- all %>%
-  filter(coordinates_obscured == "false")
-  
-```
-
-
 ```{r save this file for future use}
-write.csv(all_filtered, "all_master.csv")
+write.csv(all, "all_master.csv")
 ```
-
-## Then do some cool analyses here
-
-okay!
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

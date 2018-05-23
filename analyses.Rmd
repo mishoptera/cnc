@@ -1,0 +1,71 @@
+---
+title: "analyses"
+author: "Misha Leong"
+date: "May 23, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading files
+
+Get all the libraries in and the master files
+```{r load it up}
+library(tidyverse)
+
+# 2016, 2017, 2018 data (mix of some research grade and needs id)
+all <- read.csv(("all_master.csv"))
+nlcd_legend <- read.csv("nlcd_legend.csv")
+
+```
+
+## Filter
+
+Basics is to get down to research grade, geocoordinates not obscured.  From there, can then look at certain taxa and certain years.
+
+```{r filter}
+all_basic <- all %>%
+  filter(quality_grade == "research") %>%
+  filter(coordinates_obscured == "false") %>%
+# filter(positional_accuracy < 100 ) %>% # ask Scott/Kenichi whats going on
+  left_join(nlcd_legend, by="NLCD_layer") 
+  
+```
+
+
+```{r positional accuracy}
+# wtf is going on here
+hist(unique(all$positional_accuracy), xlim=c(0,10000), breaks=500000)
+```
+
+## Any interesting patterns with the different NLCD layers?
+
+```{r general glimps}
+#how many species are there per layer? generic run through
+all_basic%>%
+  filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  group_by(nlcd_type) %>%
+  group_by (nlcd_group) %>%
+  summarise (num_cities = n_distinct(hometown), num_class = n_distinct(taxon_class_name), num_species = n_distinct(scientific_name), num_obs = n(), ratio = num_species / num_obs)
+
+# comparison of research grade versus plain verifiable to increase sample size
+sf_rg <- all2017 %>%
+  filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  filter(hometown == "sanfrancisco") %>%
+  filter(coordinates_obscured == "false") %>%
+  filter(positional_accuracy < 31) %>%
+  left_join(nlcd_legend, by="NLCD_layer") %>%
+  group_by(nlcd_group) %>%
+#summarise (num_cities = n_distinct(hometown), num_class = n_distinct(taxon_class_name), num_species = n_distinct(scientific_name), num_obs = n(), ratio = num_species / num_obs)
+
+sf_all <- sf2017 %>%
+  filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  filter(coordinates_obscured == "false") %>%
+  filter(positional_accuracy < 31) %>%left_join(nlcd_legend, by="NLCD_layer") %>%
+  group_by(nlcd_group) %>%
+  summarise (num_cities = n_distinct(hometown), num_class = n_distinct(taxon_class_name), num_species = n_distinct(scientific_name), num_obs = n(), ratio = num_species / num_obs)
+
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
