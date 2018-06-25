@@ -1,0 +1,1088 @@
+---
+title: "analyses"
+author: "Misha Leong"
+date: "May 23, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading files
+
+Get all the libraries in and the master files
+```{r load it up}
+library(tidyverse)
+library(vegan)
+
+# 2016, 2017, 2018 data (mix of some research grade and needs id)
+all <- read.csv(("all_master.csv"))
+nlcd_legend <- read.csv("nlcd_legend.csv")
+
+```
+
+## Filter for basic usage
+
+Basics is to get down to research grade, geocoordinates not obscured.  From there, can then look at certain taxa and certain years.
+
+```{r filter}
+all_basic <- all %>%
+  filter(quality_grade == "research") %>%
+  filter(coordinates_obscured == "false") %>%
+  filter(hometown != "nashville") %>%
+  left_join(nlcd_legend, by="NLCD_layer") 
+```
+
+```{r how many obs}
+all_basic %>%
+  group_by (hometown) %>%
+  summarise (num_obs = n()) %>%
+  arrange(desc(num_obs))
+```
+Because Nashville has so few observations, I'm going to exclude it from the analysis moving forward and just have 14 cities
+
+Tested for this, but it's no longer something I'm going to worry about after talking with Rebecca and Alison.  Seems to be all over the place or not measured at all.  It's the self-reported error, but the actual error is likely way way less so don't really need to be too concerned about. NEVERMIND. I realized the REAL problem is that I was looking at frequency of unique values rather than a true frequency histogram.  I can probably safely cut out the over 30s, but then Minneapolis and Miami drop to below 1000 observations each.
+```{r positional accuracy}
+# wtf is going on here
+hist(all$positional_accuracy, xlim=c(0,1000), breaks=500000)
+hist(unique(all$positioning_device))
+```
+
+## General stats
+In 2018, new species discovery overall starts to flatten out.  There is always a higher proportion of new species to observations for natural over the developed land use types too.
+
+```{r general glimps}
+#how many species are there per layer? generic run through
+all_basic%>%
+  filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  group_by(nlcd_type) %>%
+  group_by (nlcd_group2) %>%
+  summarise (num_cities = n_distinct(hometown), num_class = n_distinct(taxon_class_name), num_species = n_distinct(scientific_name), num_obs = n(), ratio = num_species / num_obs)
+
+#2016
+all_basic%>%
+  filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  filter(year == 2016) %>%
+  group_by(nlcd_type) %>%
+  group_by (nlcd_group2) %>%
+  summarise (num_cities = n_distinct(hometown), num_class = n_distinct(taxon_class_name), num_species = n_distinct(scientific_name), num_obs = n(), ratio = num_species / num_obs)
+
+#2017
+all_basic%>%
+  filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  filter(year == 2017) %>%
+  group_by(nlcd_type) %>%
+  group_by (nlcd_group2) %>%
+  summarise (num_cities = n_distinct(hometown), num_class = n_distinct(taxon_class_name), num_species = n_distinct(scientific_name), num_obs = n(), ratio = num_species / num_obs)
+
+#2018
+all_basic%>%
+  filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  filter(year == 2018) %>%
+  group_by(nlcd_type) %>%
+  group_by (nlcd_group2) %>%
+  summarise (num_cities = n_distinct(hometown), num_class = n_distinct(taxon_class_name), num_species = n_distinct(scientific_name), num_obs = n(), ratio = num_species / num_obs)
+```
+
+
+```{r how many}
+hm <- function (taxon_data) {
+taxon_data %>% 
+  #group_by(scientific_name) %>%
+  group_by(taxon_class_name) %>%
+  summarise(count = n()) %>%
+  #arrange(desc(count))
+  #filter(count>9) %>%
+  n_distinct(taxon_data$taxon_class_name)
+}
+
+hm(plants)
+hm(birds)
+hm(arthropods)
+hm(herps)
+hm(mammals)
+hm(gastropods)
+
+class_hm <- all_wfreq %>%
+  group_by(taxon_class_name) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+class_hm
+```
+
+
+## Common versus Rare species
+
+One way to divide up "common" and "rare" species. Common species can be found in relatively equal proportions between natural and developed land.  However, rare species are much more frequently observed in natural areas.  Can mess with the values to set these at.
+
+```{r who is common who is rare}
+common <- all_basic %>%
+  #filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  filter(count>=15) %>%
+  arrange(desc(count)) %>%
+  mutate(freq="common")
+
+rare <- all_basic %>%
+  #filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  filter(count<3) %>%
+  arrange(desc(count)) %>%
+  mutate(freq="rare")
+
+frequency_status <- rbind(common, rare)
+```
+
+
+```{r creating a few files to work with}
+all_wfreq <- all_basic%>% 
+  #filter(taxon_class_name %in% c("Amphibia", "Arachnida", "Aves", "Gastropoda", "Insecta", "Mammalia", "Reptilia")) %>%
+  filter(nlcd_group %in% c("natural", "developed_open_low", "developed_medium_high")) %>%
+  left_join(frequency_status, by = "scientific_name")
+
+dicots <- all_wfreq %>% filter(taxon_class_name == "Magnoliopsida")
+monocots <- all_wfreq %>% filter(taxon_class_name == "Liliopsida")
+ferns <- all_wfreq %>% filter(taxon_class_name == "Polypodiopsida")
+conifers <- all_wfreq %>% filter(taxon_class_name == "Pinopsida")
+
+birds <- all_wfreq %>% filter(taxon_class_name == "Aves")
+insects <- all_wfreq %>% filter(taxon_class_name == "Insecta")
+arachnids <- all_wfreq %>% filter(taxon_class_name == "Arachnida")
+reptiles <- all_wfreq %>% filter(taxon_class_name == "Reptilia")
+amphibians <- all_wfreq %>% filter(taxon_class_name == "Amphibia")
+mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia")
+gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda")
+
+
+plants <- all_wfreq %>% filter(taxon_class_name %in% c("Magnoliopsida", "Liliopsida", "Polypodiopsida", "Pinopsida", "Agaricomycetes", "Lecanoromycetes"))
+animals <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Aves", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
+arthropods <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Insecta"))
+herps <- all_wfreq %>% filter(taxon_class_name %in% c("Amphibia", "Reptilia"))
+```
+
+
+## Community composition
+Creating a community composition matrix (all_matrix) and associated environmental variables (all_env) based off of the Dune dataset.  Can alter first chunk based on what taxa am interested in exploring.
+
+
+Trying to simplify with a function so multiple groups can be run more quickly
+```{r function to create matrices and environmental variables}
+cc_matrix <- function(taxon_data) {
+  taxon_matrix <- taxon_data %>%
+    filter(freq == "common") %>% 
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(hometown, nlcd_group2, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+  
+  rownames(taxon_matrix) <-paste(taxon_matrix$hometown, taxon_matrix$nlcd_group2, sep = ".")
+  taxon_matrix[,1:2] <- NULL
+  
+  return(taxon_matrix)
+}
+
+cc_env <- function(taxon_matrix) {
+  cities <- rownames(taxon_matrix)
+  
+  taxon_env <- cities %>%
+    as.data.frame.character() %>%
+    separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
+  
+  return(taxon_env)
+}
+```
+
+
+```{r community composition plots and analyses}
+plot_cc <- function (all_matrix, all_env, title) {
+mod <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
+print(mod)
+ordiplot(mod, display= "sites", type = "p", main=title)
+
+## Hulls show treatment
+#ordihull(mod, group=all_env$landcover, show="natural", col="purple")
+#ordihull(mod, group=all_env$landcover, show="developed_open_low", col="orange")
+#ordihull(mod, group=all_env$landcover, show="developed_medium_high", col="red")
+#ordihull(mod, group=all_env$landcover, show="developed1_open_space", col="blue")
+#ordihull(mod, group=all_env$landcover, show="developed2_low_intensity", col="green")
+#ordihull(mod, group=all_env$landcover, show="developed3_medium_intensity", col="orange")
+#ordihull(mod, group=all_env$landcover, show="developed4_high_intensity", col="red")
+#orditorp(mod,display="sites", col=rep(c("red", "purple", "blue"), times=14), air=0.01,cex=0.6)
+
+## Hulls show cities
+ordihull(mod, group=all_env$hometown, show="sanfrancisco", col="darkgoldenrod2")
+ordihull(mod, group=all_env$hometown, show="losangeles", col="darkgoldenrod2")
+ordihull(mod, group=all_env$hometown, show="austin", col="cyan3")
+ordihull(mod, group=all_env$hometown, show="houston", col="cyan3")
+ordihull(mod, group=all_env$hometown, show="dallas", col="cyan3")
+ordihull(mod, group=all_env$hometown, show="boston", col="magenta")
+ordihull(mod, group=all_env$hometown, show="washingtondc", col="magenta")
+ordihull(mod, group=all_env$hometown, show="chicago", col="magenta")
+ordihull(mod, group=all_env$hometown, show="newyork", col="magenta")
+ordihull(mod, group=all_env$hometown, show="raleigh", col="green")
+ordihull(mod, group=all_env$hometown, show="miami", col="pink")
+ordihull(mod, group=all_env$hometown, show="minneapolis", col="purple")
+ordihull(mod, group=all_env$hometown, show="seattle", col="blue")
+ordihull(mod, group=all_env$hometown, show="saltlakecity", col="darkgreen")
+
+lc <- adonis(all_matrix ~ all_env$landcover_group, data = all_env, strata = all_env$hometown, permutations = 999)
+print(lc)
+ht <- adonis(all_matrix ~ all_env$hometown, data = all_env, strata = all_env$landcover_group, permutations = 999)
+print(ht)
+}
+
+
+
+
+
+```
+Calling the functions!
+```{r putting all the community composition funcitons together}
+# All Taxa
+cc_all <- cc_matrix(all_wfreq)
+cc_all_env <- cc_env(cc_all)
+plot_cc(cc_all, cc_all_env, "All taxa")
+
+# All Plants
+cc_plants <- cc_matrix(plants)
+cc_plants_env <- cc_env(cc_plants)
+plot_cc(cc_plants, cc_plants_env, "plants")
+
+# All Animals
+cc_animals <- cc_matrix(animals)
+cc_animals_env <- cc_env(cc_animals)
+plot_cc(cc_animals, cc_animals_env, "animals")
+
+# Dicots
+cc_dicots <- cc_matrix(dicots)
+cc_dicots_env <- cc_env(cc_dicots)
+plot_cc(cc_dicots, cc_dicots_env, "dicots")
+
+# Monocots
+cc_monocots <- cc_matrix(monocots)
+cc_monocots_env <- cc_env(cc_monocots)
+plot_cc(cc_monocots, cc_monocots_env, "monocots")
+
+# Ferns
+cc_ferns <- cc_matrix(ferns)
+cc_ferns_env <- cc_env(cc_ferns)
+plot_cc(cc_ferns, cc_ferns_env, "ferns")
+
+# Conifers
+cc_conifers <- cc_matrix(conifers)
+cc_conifers_env <- cc_env(cc_conifers)
+plot_cc(cc_conifers, cc_conifers_env, "conifers")
+
+# Birds
+cc_birds <- cc_matrix(birds)
+cc_birds_env <- cc_env(cc_birds)
+plot_cc(cc_birds, cc_birds_env, "Birds")
+
+# mammals
+cc_mammals <- cc_matrix(mammals)
+cc_mammals_env <- cc_env(cc_mammals)
+plot_cc(cc_mammals, cc_mammals_env, "mammals")
+
+# reptiles
+cc_reptiles <- cc_matrix(reptiles)
+cc_reptiles_env <- cc_env(cc_reptiles)
+plot_cc(cc_reptiles, cc_reptiles_env, "reptiles")
+
+# amphibians
+cc_amphibians <- cc_matrix(amphibians)
+cc_amphibians_env <- cc_env(cc_amphibians)
+plot_cc(cc_amphibians, cc_amphibians_env, "amphibians")
+
+# arthropods
+cc_arthropods <- cc_matrix(arthropods)
+cc_arthropods_env <- cc_env(cc_arthropods)
+plot_cc(cc_arthropods, cc_arthropods_env, "arthropods")
+```
+
+
+# MOST COMMON SPECIES LIST BY CITY AND LANDCOVER TYPE
+
+# ranks by landcover type and city
+```{r giant table 2}
+
+# Creates a ranked list of the most common species for each city
+
+process_city <- function (hometown1, taxa, nlcd) {
+  name_rank = paste(if_else (nlcd == "natural", "n", 
+      if_else (nlcd == "developed1_open_space", "d1",  
+      if_else (nlcd == "developed2_low_intensity", "d2", 
+      if_else (nlcd == "developed3_medium_intensity", "d3","d4")))), hometown1, sep = "_")
+  
+  city_taxa <- taxa %>%
+      filter(nlcd_group2 == nlcd) %>%
+      group_by(scientific_name) %>%
+      summarise(count = n()) %>%
+      arrange(desc(count)) %>%
+      mutate(rank = rank(desc(count), ties.method="random")) %>%
+      select(-count) %>%
+      rename(!!name_rank := rank)
+  
+  return(city_taxa)
+}
+
+# mini table of all the different land use types for each city
+create_table_hometown <- function(hometown1, taxa)  {
+  n <- process_city(hometown1, taxa, "natural")
+  d1 <- process_city(hometown1, taxa, "developed1_open_space")
+  d2 <- process_city(hometown1, taxa, "developed2_low_intensity")
+  d3 <- process_city(hometown1, taxa, "developed3_medium_intensity")
+  d4 <- process_city(hometown1, taxa, "developed4_high_intensity")
+  
+    hometown_table <- n %>%
+    left_join(d1, by="scientific_name") %>%
+    left_join(d2, by="scientific_name") %>%
+    left_join(d3, by="scientific_name") %>%
+    full_join(d4, by="scientific_name") %>%
+    distinct()
+}
+
+# knit all mini city tables together!
+create_big_table <- function(taxa)  {
+
+total  <- taxa %>%
+  group_by(scientific_name) %>%
+  summarise(count = n()) %>%
+  filter(count>=15)%>%
+  arrange(desc(count)) %>%
+  mutate(rank = rank(desc(count), ties.method="random"))
+
+  Austin  <- create_table_hometown("austin", taxa)
+  Boston  <- create_table_hometown("boston", taxa)
+  Chicago  <- create_table_hometown("chicago", taxa)
+  Dallas  <- create_table_hometown('dallas', taxa)
+  Houston  <- create_table_hometown('houston', taxa)
+  Los_Angeles  <- create_table_hometown('losangeles', taxa)
+  Miami  <- create_table_hometown('miami', taxa)
+  Minneapolis  <- create_table_hometown('minneapolis', taxa)
+  New_York  <- create_table_hometown('newyork', taxa)
+  Raleigh  <- create_table_hometown('raleigh', taxa)
+  Salt_Lake_City  <- create_table_hometown('saltlakecity', taxa)
+  San_Francisco  <- create_table_hometown('sanfrancisco', taxa)
+  Seattle  <- create_table_hometown('seattle', taxa)
+  Washington_DC <- create_table_hometown('washingtondc', taxa)
+
+  big_table <- total %>%
+    left_join(Austin, by="scientific_name") %>%
+    left_join(Boston, by="scientific_name") %>%
+    left_join(Chicago, by="scientific_name") %>%
+    full_join(Dallas, by="scientific_name") %>%
+    full_join(Houston, by="scientific_name") %>%
+    full_join(Los_Angeles, by="scientific_name") %>%
+    full_join(Miami, by="scientific_name") %>%
+    full_join(Minneapolis, by="scientific_name") %>%
+    full_join(New_York, by="scientific_name") %>%
+    full_join(Raleigh, by="scientific_name") %>%
+    full_join(Salt_Lake_City, by="scientific_name") %>%
+    full_join(San_Francisco, by="scientific_name") %>%
+    full_join(Seattle, by="scientific_name") %>%
+    full_join(Washington_DC, by="scientific_name")%>%
+    distinct()
+}
+
+ranks_plants <- create_big_table(plants)
+ranks_birds <- create_big_table(birds)
+ranks_arthropods <- create_big_table(arthropods)
+ranks_herps <- create_big_table(herps)
+ranks_mammals <- create_big_table(mammals)
+ranks_gastropods <- create_big_table(gastropods)
+
+ranks_dicots <- create_big_table(dicots)
+ranks_monocots <- create_big_table(monocots)
+ranks_ferns <- create_big_table(ferns)
+ranks_conifers <- create_big_table(conifers)
+ranks_insects <- create_big_table(insects)
+ranks_arachnids <- create_big_table(arachnids)
+ranks_reptiles <- create_big_table(reptiles)
+ranks_amphibians <- create_big_table(amphibians)
+
+
+
+```
+
+Taking the above and creating a bit more of a summary table
+```{r summary of top ranks by land cover}
+
+big_table <- ranks_plants
+small_table <- function(big_table) {
+  n.mean <- big_table %>% select(contains("n_")) %>% rowMeans(., na.rm = TRUE)
+  d1.mean <- big_table %>% select(contains("d1_")) %>% rowMeans(., na.rm = TRUE)
+  d2.mean <- big_table %>% select(contains("d2_")) %>% rowMeans(., na.rm = TRUE)
+  d3.mean <- big_table %>% select(contains("d3_")) %>% rowMeans(., na.rm = TRUE)
+  d4.mean <- big_table %>% select(contains("d4_")) %>% rowMeans(., na.rm = TRUE)
+
+  temp <- big_table %>% 
+    select(scientific_name, count, rank) %>%
+    cbind(n.mean, d1.mean, d2.mean, d3.mean, d4.mean) %>%
+    filter(count >= 15)
+  
+  return(temp)
+}
+
+st_plants <- small_table(ranks_plants) 
+st_birds <- small_table(ranks_birds)
+st_arthropods <- small_table(ranks_arthropods)
+st_herps <- small_table(ranks_herps)
+st_mammals <- small_table(ranks_mammals)
+st_gastropods <- small_table(ranks_gastropods)
+
+st_dicots <- small_table(ranks_dicots)
+st_monocots <- small_table(ranks_monocots)
+st_ferns <- small_table(ranks_ferns)
+st_conifers <- small_table(ranks_conifers)
+st_insects <- small_table(ranks_insects)
+st_arachnids <- small_table(ranks_arachnids)
+st_reptiles <- small_table(ranks_reptiles)
+st_amphibians <- small_table(ranks_amphibians)
+
+```
+
+# CREATE OVER/UNDER REPRESENTATION TABLE
+Create the total list for each landcover type.
+Join these together.
+Create a column that is the sum of the three landcover types.
+Calculate the ratio for each landcover type divided by the sum.
+Does not need to be broken up by taxa.
+But sort it by sums.
+
+ 
+# AN IMPROVEMENT ON OVER/UNDER REPRSESENTATON
+Realized I need to take into consideration that many more observations were happening in natural areas compared to developed sites, so hard to tease apart whether species were being found more frequently in certain landuse types because of an affinity or just by colleciton effort.  This method takes into account the proportion of observations of a particular species relative to the total number of observatiosn within that landuse type.  THen, because some species have many more overall observations than others, we look at the relative proportions of these relative proportions within a species.  Because there are 5 land use types, the relative proportion of each species within each land use type should be around 20%.  So for any species that had over 1.5x that for a given land use type, it is now highlighted.
+```{r over under representation}
+# A FUNCTION TO GET THE TOTAL NUMBER OF OBSERVATIONS PER LANDCOVER TYPE
+total_obs_per_lc <- function(taxon_data3, lc3) {
+  taxon_data3 %>%
+  filter(nlcd_group2 == lc3) %>%
+  summarise(n_distinct(id)) %>%
+  pull()
+}
+
+# NOW TO GET prop_sp_lc = sp_obs_per_lc / total_obs_per_lc
+temp_table_lc <- function(taxon_data2, lc2) {
+  taxon_data2 %>%
+  filter(nlcd_group2 == lc2) %>%
+  group_by(scientific_name) %>%
+  mutate(sp_obs_per_lc = n_distinct(id)) %>%
+  mutate(total_obs = total_obs_per_lc(taxon_data2, lc2)) %>%
+  mutate(prop_sp_lc = n_distinct(id)/total_obs_per_lc(taxon_data2, lc2)) %>%
+  select(scientific_name, prop_sp_lc) %>%
+  rename(!!lc2 := prop_sp_lc)
+}
+
+city_table_props <- function(taxon_data) {
+  taxon_data %>%
+  select(scientific_name, id) %>%
+  group_by(scientific_name) %>%
+  summarise(count = n_distinct(id)) %>%
+  left_join(temp_table_lc(taxon_data, "natural"), by="scientific_name") %>%
+  left_join(temp_table_lc(taxon_data, "developed1_open_space"), by="scientific_name") %>%
+  distinct() %>%
+  left_join(temp_table_lc(taxon_data, "developed2_low_intensity"), by="scientific_name") %>%
+  distinct() %>%
+  left_join(temp_table_lc(taxon_data, "developed3_medium_intensity"), by="scientific_name") %>%
+  distinct() %>%
+  left_join(temp_table_lc(taxon_data, "developed4_high_intensity"), by="scientific_name") %>%
+  distinct() %>%
+  arrange(desc(count)) %>%
+  replace(is.na(.), 0) %>%
+  mutate(total_lc_props = natural + developed1_open_space + developed2_low_intensity + developed3_medium_intensity + developed4_high_intensity) %>%
+  mutate(n = natural/total_lc_props) %>%
+  mutate(d1 = developed1_open_space/total_lc_props) %>%
+  mutate(d2 = developed2_low_intensity/total_lc_props) %>%
+  mutate(d3 = developed3_medium_intensity/total_lc_props) %>%
+  mutate(d4 = developed4_high_intensity/total_lc_props) %>%
+  select(c(scientific_name, count, n, d1, d2 ,d3 , d4)) %>%
+  #mutate(over = ifelse(n >= 0.3, "n",
+  #              ifelse(d1 >= 0.3, "d1",
+  #              ifelse(d2 >= 0.3, "d2",
+  #               ifelse(d3 >= 0.3, "d3",
+  #              ifelse(d4 >= 0.3, "d4",
+  #              "-")))))) %>%
+  mutate(temp = ifelse(n >= 0.3, 1, 0) +
+                ifelse(d1 >= 0.3, 2, 0) +
+                ifelse(d2 >= 0.3, 4, 0) +
+                ifelse(d3 >= 0.3, 8, 0) +
+                ifelse(d4 >= 0.3, 16, 0)) %>%
+  mutate(over = ifelse(temp == 0, "-",
+                ifelse(temp == 1, "n",
+                ifelse(temp == 2, "d1",
+                ifelse(temp == 4, "d2",
+                ifelse(temp == 8, "d3",
+                ifelse(temp == 16, "d4",
+                       ifelse (temp > 16, "d4+",
+                       ifelse (temp > 8, "d3+",
+                       ifelse (temp > 4, "d2+", "d1+n")))))))))) %>%
+  mutate(over = fct_relevel(over, c("d4", "d4+", "d3","d3+", "d2", "d2+", "d1", "d1+n", "n", "-")))%>% 
+  arrange(over, desc(count))
+}
+
+plants <- all_wfreq %>% filter(iconic_taxon_name == "Plantae") 
+birds <- all_wfreq %>% filter(taxon_class_name == "Aves") 
+nonbirds <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
+arthropods <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Insecta"))
+herps <- all_wfreq %>% filter(taxon_class_name %in% c("Amphibia", "Reptilia"))
+mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia")
+
+ou_birds <- city_table_props(birds %>% filter(count>9))
+ou_plants <- city_table_props(plants %>% filter(count>9))
+ou_nonbirds <- city_table_props(nonbirds %>% filter(count>9))
+ou_arthropods <- city_table_props(arthropods %>% filter(count>9))
+ou_mammals <- city_table_props(mammals %>% filter(count>9))
+ou_herps <- city_table_props(herps %>% filter(count>9))
+ou_gastropods <- city_table_props(gastropods %>% filter(count>9))
+
+# type this in console
+print(ou_herps, n=500)
+
+
+```
+
+# SOME PLOTS TO ILLUSTRATE OVER/UNDER REPRESENTATION
+for each taxa group, show the # of over representations per landcover type like in presentation.
+```{r making some plots}
+library(ggplot2)
+ou_plot <- ou_plants%>% 
+  gather("nlcd", "rel_prop", n:d4) %>%
+  mutate(nlcd = fct_relevel(nlcd, c("n", "d1", "d2", "d3", "d4"))) %>%
+  filter (count>=30)
+
+p <- ggplot(ou_plot, aes(nlcd, rel_prop, group = scientific_name, colour = over))
+p + geom_line()
+```
+
+
+
+
+
+
+
+
+## ALL CODE BELOW IS NO LONGER BEING USED BUT IM TOO SCARED TO DELETE IN CASE I NEED ONE DAY
+************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+
+
+## Species accumulation curves
+Let's visualize what I was getting at in the above glimpse.  Do different land use types seem to be approching their maximun species? Meh all seem about the same.
+
+```{r}
+library(vegan)
+
+plot_rarefaction <- function (nlcd_group_type) {
+  comm_landuse<- all_wfreq %>%
+    filter(nlcd_group == nlcd_group_type) %>%
+    filter(freq=="common") %>%
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(user_login, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+
+  #names <- paste(comm_landuse$hometown, comm_landuse$nlcd_group, sep = ".")
+  #rownames(comm_landuse) <- user_login
+  comm_landuse[,1:2] <- NULL
+  
+  curve <- specaccum (comm_landuse, method = "rarefaction")
+  plot(curve, ci.type = "line", ci.col = "lightblue", main = nlcd_group_type)
+}
+
+plot_rarefaction("natural")
+plot_rarefaction("developed_open_low")
+plot_rarefaction("developed_medium_high")
+
+```
+
+```{r rarefaction by taxa}
+plot_rarefaction <- function (taxon_data, title, nlcd_group_type) {
+  comm_landuse<- taxon_data %>%
+    filter(nlcd_group == nlcd_group_type) %>%
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(user_login, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+
+  #names <- paste(comm_landuse$hometown, comm_landuse$nlcd_group, sep = ".")
+  #rownames(comm_landuse) <- user_login
+  comm_landuse[,1:2] <- NULL
+  
+  curve <- specaccum (comm_landuse, method = "exact")
+  plot(curve, ci.type = "line", ci.col = "lightblue", main = c(title, nlcd_group_type))
+}
+
+plants <- all_wfreq %>% filter(iconic_taxon_name == "Plantae") 
+birds <- all_wfreq %>% filter(taxon_class_name == "Aves") 
+nonbirds <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
+arthropods <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Insecta"))
+herps <- all_wfreq %>% filter(taxon_class_name %in% c("Amphibia", "Reptilia"))
+mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia")
+gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda")
+verts <- all_wfreq %>% filter(taxon_class_name %in% c("Amphibia", "Reptilia", "Mammalia", "Aves"))
+inverts <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Insecta", "Gastropoda"))
+
+plot_rarefaction(plants, "Plants", "natural")
+#plot_rarefaction(verts, "Verts", "natural")
+#plot_rarefaction(inverts, "Inverts", "natural")
+plot_rarefaction(birds, "Birds", "natural")
+plot_rarefaction(arthropods, "Arthopods", "natural")
+plot_rarefaction(herps, "Herps", "natural")
+plot_rarefaction(mammals, "Mammals", "natural")
+plot_rarefaction(gastropods, "gastropods", "natural")
+
+plot_rarefaction(plants, "Plants", "developed_open_low")
+#plot_rarefaction(verts, "Verts", "developed_open_low")
+#plot_rarefaction(inverts, "Inverts", "developed_open_low")
+plot_rarefaction(birds, "Birds", "developed_open_low")
+plot_rarefaction(arthropods, "Arthopods", "developed_open_low")
+plot_rarefaction(herps, "Herps", "developed_open_low")
+plot_rarefaction(mammals, "Mammals", "developed_open_low")
+plot_rarefaction(gastropods, "gastropods", "developed_open_low")
+
+plot_rarefaction(plants, "Plants", "developed_medium_high")
+#plot_rarefaction(verts, "Verts", "developed_medium_high")
+#plot_rarefaction(inverts, "Inverts", "developed_medium_high")
+plot_rarefaction(birds, "Birds", "developed_medium_high")
+plot_rarefaction(arthropods, "Arthopods", "developed_medium_high")
+plot_rarefaction(herps, "Herps", "developed_medium_high")
+plot_rarefaction(mammals, "Mammals", "developed_medium_high")
+plot_rarefaction(gastropods, "gastropods", "developed_medium_high")
+```
+
+## OLD CODE IM SCARED TO DELETE IN CASE IT WILL BE USEFUL ONE DAY
+This works!  Huge ass tables for each taxa with non of that excel bullshit.  Still would like to figure out a way to highlight interesting stuff immediatley within R though instead of having to do search.
+
+```{r giant table}
+plants <- all_wfreq %>% filter(iconic_taxon_name == "Plantae") 
+birds <- all_wfreq %>% filter(taxon_class_name == "Aves") 
+nonbirds <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
+arthropods <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Insecta"))
+herps <- all_wfreq %>% filter(taxon_class_name %in% c("Amphibia", "Reptilia"))
+mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia")
+gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda")
+
+# Creates a ranked list of the most common species for each city
+process_city <- function (hometown1, taxa, nlcd) {
+  if (hometown1 != "total") {
+    taxa2 <- taxa %>% filter(hometown == hometown1)
+  }
+  else
+    taxa2 <- taxa
+  
+  city_taxa <- taxa2 %>%
+      filter(nlcd_group2 == nlcd) %>%
+      group_by(scientific_name) %>%
+      summarise(count = n()) %>%
+      arrange(desc(count)) %>%
+      mutate(rank = rank(desc(count), ties.method="random")) %>%
+      rename(!!hometown1 := scientific_name) %>%
+      rename(!!nlcd := count)
+}
+
+# mini table of all the different land use types for each city
+create_table_hometown <- function(hometown1, taxa)  {
+  n <- process_city(hometown1, taxa, "natural")
+  d1 <- process_city(hometown1, taxa, "developed1_open_space")
+  d2 <- process_city(hometown1, taxa, "developed2_low_intensity")
+  d3 <- process_city(hometown1, taxa, "developed3_medium_intensity")
+  d4 <-process_city(hometown1, taxa, "developed4_high_intensity")
+  
+    hometown_table <- n %>%
+    left_join(d1, by="rank") %>%
+    left_join(d2, by="rank") %>%
+    left_join(d3, by="rank") %>%
+    full_join(d4, by="rank") %>%
+    distinct()
+}
+
+# knit all mini city tables together!
+create_big_table <- function(taxa)  {
+  Total  <- create_table_hometown("total", taxa)
+  Austin  <- create_table_hometown("austin", taxa)
+  Boston  <- create_table_hometown("boston", taxa)
+  Chicago  <- create_table_hometown("chicago", taxa)
+  Dallas  <- create_table_hometown('dallas', taxa)
+  Houston  <- create_table_hometown('houston', taxa)
+  Los_Angeles  <- create_table_hometown('losangeles', taxa)
+  Miami  <- create_table_hometown('miami', taxa)
+  Minneapolis  <- create_table_hometown('minneapolis', taxa)
+  New_York  <- create_table_hometown('newyork', taxa)
+  Raleigh  <- create_table_hometown('raleigh', taxa)
+  Salt_Lake_City  <- create_table_hometown('saltlakecity', taxa)
+  San_Francisco  <- create_table_hometown('sanfrancisco', taxa)
+  Seattle  <- create_table_hometown('seattle', taxa)
+  Washington_DC <- create_table_hometown('washingtondc', taxa)
+
+  big_table <- Total %>%
+    left_join(Austin, by="rank") %>%
+    left_join(Boston, by="rank") %>%
+    left_join(Chicago, by="rank") %>%
+    full_join(Dallas, by="rank") %>%
+    full_join(Houston, by="rank") %>%
+    full_join(Los_Angeles, by="rank") %>%
+    full_join(Miami, by="rank") %>%
+    full_join(Minneapolis, by="rank") %>%
+    full_join(New_York, by="rank") %>%
+    full_join(Raleigh, by="rank") %>%
+    full_join(Salt_Lake_City, by="rank") %>%
+    full_join(San_Francisco, by="rank") %>%
+    full_join(Seattle, by="rank") %>%
+    full_join(Washington_DC, by="rank")%>%
+    distinct()
+}
+
+(ranks_plants <- create_big_table(plants))
+(ranks_birds <- create_big_table(birds))
+(ranks_arthropods <- create_big_table(arthropods))
+(ranks_herps <- create_big_table(herps))
+(ranks_mammals <- create_big_table(mammals))
+(ranks_gastropods <- create_big_table(gastropods))
+
+```
+```{r overunder representation tables}
+plants <- all_wfreq %>% filter(iconic_taxon_name == "Plantae") 
+birds <- all_wfreq %>% filter(taxon_class_name == "Aves") 
+nonbirds <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
+arthropods <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Insecta"))
+herps <- all_wfreq %>% filter(taxon_class_name %in% c("Amphibia", "Reptilia"))
+mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia")
+gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda")
+
+#change this line as needed
+taxon_data <-birds
+
+total <- taxon_data %>% 
+  group_by(scientific_name) %>%
+  summarise(count = n()) %>%
+  filter(count>9) %>%
+  arrange(desc(count)) %>%
+  rename(total = count)
+
+natural <- taxon_data %>% 
+  filter(nlcd_group2 == "natural") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(natural = count)
+
+dev1 <- taxon_data %>% 
+  filter(nlcd_group2 == "developed1_open_space") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(dev1 = count)
+
+dev2 <- taxon_data %>% 
+  filter(nlcd_group2 == "developed2_low_intensity") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(dev2 = count)
+
+dev3 <- taxon_data %>% 
+  filter(nlcd_group2 == "developed3_medium_intensity") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(dev3 = count)
+
+dev4 <- taxon_data %>% 
+  filter(nlcd_group2 == "developed4_high_intensity") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(dev4 = count)
+
+ou_table <- total %>%
+  left_join(natural, by="scientific_name") %>%
+  left_join(dev1, by="scientific_name") %>%
+  left_join(dev2, by="scientific_name") %>%
+  left_join(dev3, by="scientific_name") %>%
+  left_join(dev4, by="scientific_name") %>%
+  mutate(ratio_natural = natural/total) %>%
+  mutate(ratio_dev1 = dev1/total) %>%
+  mutate(ratio_dev2 = dev2/total) %>%
+  mutate(ratio_dev3 = dev3/total) %>%
+  mutate(ratio_dev4 = dev4/total) %>%
+  arrange(desc(dev1))
+
+ou_table
+
+#write.csv(ou_table, "ou_arthropods.csv")
+
+
+# sd_table <- c(
+#               0.33+sd(ou_table$ratio_natural, na.rm = TRUE), 
+#               0.33-sd(ou_table$ratio_natural, na.rm = TRUE),
+#               0.33+sd(ou_table$ratio_urban_low, na.rm = TRUE), 
+#               0.33-sd(ou_table$ratio_urban_low, na.rm = TRUE),
+#               0.33+sd(ou_table$ratio_urban_high, na.rm = TRUE),
+#               0.33-sd(ou_table$ratio_urban_high, na.rm = TRUE))
+# sd_table
+
+```
+
+Using above code to create a function to pull out some more interesting data.  When I updated for 5 urbanization classes reather than just 3, none of the developed sites had any overrepresentation!
+```{r}
+
+taxon_data <- plants
+#function ou
+ou <- function (taxon_data) {
+total <- taxon_data %>% 
+  group_by(scientific_name) %>%
+  summarise(count = n()) %>%
+  filter(count>9) %>%
+  arrange(desc(count)) %>%
+  rename(total = count)
+
+natural <- taxon_data %>% 
+  filter(nlcd_group2 == "natural") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(natural = count)
+
+dev1 <- taxon_data %>% 
+  filter(nlcd_group2 == "developed1_open_space") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(dev1 = count)
+
+dev2 <- taxon_data %>% 
+  filter(nlcd_group2 == "developed2_low_intensity") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(dev2 = count)
+
+dev3 <- taxon_data %>% 
+  filter(nlcd_group2 == "developed3_medium_intensity") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(dev3 = count)
+
+dev4 <- taxon_data %>% 
+  filter(nlcd_group2 == "developed4_high_intensity") %>%
+  group_by(scientific_name) %>%
+  summarise(count = n())  %>%
+  arrange(desc(count)) %>%
+  rename(dev4 = count)
+
+
+ou_table <- total %>%
+  left_join(natural, by="scientific_name") %>%
+  left_join(dev1, by="scientific_name") %>%
+  left_join(dev2, by="scientific_name") %>%
+  left_join(dev3, by="scientific_name") %>%
+  left_join(dev4, by="scientific_name") %>%
+  mutate(ratio_natural = natural/total) %>%
+  mutate(ratio_dev1 = dev1/total) %>%
+  mutate(ratio_dev2 = dev2/total) %>%
+  mutate(ratio_dev3 = dev3/total) %>%
+  mutate(ratio_dev4 = dev4/total) %>%
+  mutate(ou_natural=if_else(ratio_natural>=(0.2+sd(ou_table$ratio_natural, na.rm = TRUE)), 1, 0)) %>%
+  mutate(ou_dev1=if_else(ratio_dev1>=(0.2+sd(ou_table$dev1, na.rm = TRUE)), 1, 0)) %>%
+  mutate(ou_dev2=if_else(ratio_dev2>=(0.2+sd(ou_table$dev2, na.rm = TRUE)), 1, 0)) %>%
+  mutate(ou_dev3=if_else(ratio_dev3>=(0.2+sd(ou_table$dev3, na.rm = TRUE)), 1, 0)) %>%
+  mutate(ou_dev4=if_else(ratio_dev4>=(0.2+sd(ou_table$dev4, na.rm = TRUE)), 1, 0)) 
+
+ou_natural_table <- ou_table %>% filter (ou_natural > 0) %>% mutate(over = "natural")
+ou_dev1_table <- ou_table %>% filter (ou_dev1 > 0) %>% mutate(over = "dev1")
+ou_dev2_table <- ou_table %>% filter (ou_dev2 > 0) %>% mutate(over = "dev2")
+ou_dev3_table <- ou_table %>% filter (ou_dev1 > 0) %>% mutate(over = "dev3")
+ou_dev4_table <- ou_table %>% filter (ou_dev2 > 0) %>% mutate(over = "dev4")
+
+ou_summary <- ou_natural_table %>%
+  bind_rows(ou_dev1_table) %>%
+  bind_rows(ou_dev2_table) %>%
+  bind_rows(ou_dev3_table) %>%
+  bind_rows(ou_dev4_table) %>%
+  select(c("scientific_name", "total", "natural", "dev1", "dev2", "dev3", "dev4", "over"))
+
+ou_summary
+}
+
+plants <- all_wfreq %>% filter(iconic_taxon_name == "Plantae") 
+birds <- all_wfreq %>% filter(taxon_class_name == "Aves") 
+nonbirds <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
+arthropods <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Insecta"))
+herps <- all_wfreq %>% filter(taxon_class_name %in% c("Amphibia", "Reptilia"))
+mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia")
+gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda")
+
+ou(plants) #%>% group_by(over) %>% summarize (n())
+ou(birds)  #%>% group_by(over) %>% summarize (n())
+ou(arthropods) #%>% group_by(over) %>% summarize (n())
+ou(herps) #%>% group_by(over) %>% summarize (n())
+ou(mammals) #%>% group_by(over) %>% summarize (n())
+ou(gastropods) #%>% group_by(over) %>% summarize (n())
+```
+
+Old CC Matrix creation for 3 NLCDs
+
+Now reverting to the more collapsed 3 method groupings to keep sampling effort more closely together.
+```{r}
+all_taxa<- all_wfreq %>%
+    filter(nlcd_group %in% c("natural", "developed_open_low", "developed_medium_high")) %>%
+    filter(freq == "common") %>% 
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(hometown, nlcd_group, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+names <- paste(all_taxa$hometown, all_taxa$nlcd_group, sep = ".")
+rownames(all_taxa) <- names
+all_taxa[,1:2] <- NULL
+landcover <- rep(c("developed_medium_high", "developed_open_low", "natural"), times = 14)
+cities <-rownames(all_taxa)
+all_taxa_env <- cities %>%
+  as.data.frame.character() %>%
+  separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
+
+## BIRDS
+all_birds<- all_wfreq %>%
+    filter(nlcd_group %in% c("natural", "developed_open_low", "developed_medium_high")) %>%
+    filter(taxon_class_name == "Aves") %>%
+    filter(freq == "common") %>% 
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(hometown, nlcd_group, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+names <- paste(all_birds$hometown, all_birds$nlcd_group, sep = ".")
+rownames(all_birds) <- names
+all_birds[,1:2] <- NULL
+landcover <- rep(c("developed_medium_high", "developed_open_low", "natural"), times = 14)
+cities <-rownames(all_taxa)
+all_birds_env <- cities %>%
+  as.data.frame.character() %>%
+  separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
+
+## PLANTS
+all_plants<- all_wfreq %>%
+    filter(nlcd_group %in% c("natural", "developed_open_low", "developed_medium_high")) %>%
+    filter(iconic_taxon_name == "Plantae") %>%
+    filter(freq == "common") %>% 
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(hometown, nlcd_group, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+names <- paste(all_plants$hometown, all_plants$nlcd_group, sep = ".")
+rownames(all_plants) <- names
+all_plants[,1:2] <- NULL
+landcover <- rep(c("developed_medium_high", "developed_open_low", "natural"), times = 14)
+cities <-rownames(all_taxa)
+all_plants_env <- cities %>%
+  as.data.frame.character() %>%
+  separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
+
+## nonbird animals
+all_nonbirds<- all_wfreq %>%
+    filter(nlcd_group %in% c("natural", "developed_open_low", "developed_medium_high")) %>%
+    filter(taxon_class_name %in% c("Arachnida", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia")) %>% 
+    filter(freq == "common") %>% 
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(hometown, nlcd_group, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+names <- paste(all_nonbirds$hometown, all_nonbirds$nlcd_group, sep = ".")
+rownames(all_nonbirds) <- names
+all_nonbirds[,1:2] <- NULL
+landcover <- rep(c("developed_medium_high", "developed_open_low", "natural"), times = 14)
+cities <-rownames(all_taxa)
+all_nonbirds_env <- cities %>%
+  as.data.frame.character() %>%
+  separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
+```
+
+
+AND THEN WITH ALL 5
+
+Creating a community matrix with NLCD groupings of Natural, Low Development, High Development
+```{r}
+all_taxa<- all_wfreq %>%
+    filter(nlcd_group %in% c("natural", "developed_open_low", "developed_medium_high")) %>%
+    filter(freq == "common") %>% 
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(hometown, nlcd_group2, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+names <- paste(all_taxa$hometown, all_taxa$nlcd_group2, sep = ".")
+rownames(all_taxa) <- names
+all_taxa[,1:2] <- NULL
+landcover <- rep(c("developed1_open_space", "developed2_low_intensity", "developed3_medium_intensity", "developed4_high_intensity", "natural"), times = 14)
+cities <-rownames(all_taxa)
+all_taxa_env <- cities %>%
+  as.data.frame.character() %>%
+  separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
+
+## BIRDS
+all_birds<- all_wfreq %>%
+    filter(nlcd_group %in% c("natural", "developed_open_low", "developed_medium_high")) %>%
+    filter(taxon_class_name == "Aves") %>%
+    filter(freq == "common") %>% 
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(hometown, nlcd_group2, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+names <- paste(all_birds$hometown, all_birds$nlcd_group, sep = ".")
+rownames(all_birds) <- names
+all_birds[,1:2] <- NULL
+landcover <- rep(c("developed1_open_space", "developed2_low_intensity", "developed3_medium_intensity", "developed4_high_intensity", "natural"), times = 14)
+cities <-rownames(all_taxa)
+all_birds_env <- cities %>%
+  as.data.frame.character() %>%
+  separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
+
+## PLANTS
+all_plants<- all_wfreq %>%
+    filter(nlcd_group %in% c("natural", "developed_open_low", "developed_medium_high")) %>%
+    filter(iconic_taxon_name == "Plantae") %>%
+    filter(freq == "common") %>% 
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(hometown, nlcd_group2, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+names <- paste(all_plants$hometown, all_plants$nlcd_group, sep = ".")
+rownames(all_plants) <- names
+all_plants[,1:2] <- NULL
+landcover <- rep(c("developed1_open_space", "developed2_low_intensity", "developed3_medium_intensity", "developed4_high_intensity", "natural"), times = 14)
+cities <-rownames(all_taxa)
+all_plants_env <- cities %>%
+  as.data.frame.character() %>%
+  #filter(.!="miami.developed4_high_intensity") %>%   #special case that was all zeroes
+  separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
+
+## nonbird animals
+all_nonbirds<- all_wfreq %>%
+    filter(nlcd_group %in% c("natural", "developed_open_low", "developed_medium_high")) %>%
+    filter(taxon_class_name %in% c("Arachnida", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia")) %>%
+    filter(freq == "common") %>% 
+    unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
+    group_by(hometown, nlcd_group2, long_name) %>%
+    summarise(obs = n()) %>%
+    spread(long_name, obs, fill = 0) %>%
+    as.data.frame()
+names <- paste(all_nonbirds$hometown, all_nonbirds$nlcd_group, sep = ".")
+rownames(all_nonbirds) <- names
+all_nonbirds[,1:2] <- NULL
+landcover <- rep(c("developed1_open_space", "developed2_low_intensity", "developed3_medium_intensity", "developed4_high_intensity", "natural"), times = 14)
+cities <-rownames(all_taxa)
+all_nonbirds_env <- cities %>%
+  as.data.frame.character() %>%
+  #filter(.!="seattle.developed4_high_intensity") %>%   #special case that was all zeroes
+  separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
+```
