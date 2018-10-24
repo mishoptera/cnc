@@ -1,7 +1,6 @@
 # ************************************
 # FIRST THINGS FIRST
 # ************************************
-setwd
 
 # load libraries
 library(tidyverse)
@@ -10,11 +9,6 @@ library(ggmap)
 library(ggrepel)
 library(ggpubr)
 library(stringr)
-
-
-source(file.path('cc.R'))
-source(file.path('ranks.R'))
-source(file.path('cc_plots.R'))
 
 # load files
 load('all_wfreq.Rdata')
@@ -39,5 +33,6 @@ amphibians <- all_wfreq %>% filter(taxon_class_name == "Amphibia") %>% mutate (t
 mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia") %>% mutate (taxon="mammals")
 gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda") %>% mutate (taxon="gastropods")
 
-#*************************************
-
+# ************************************
+# COMMUNITY COMPOSITION
+# ************************************
