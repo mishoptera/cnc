@@ -202,6 +202,40 @@ adonis_cc_region <- function (all_matrix) {
 }
 
 # ////////////////////
+# Regional PERMANOVA analyses
+adonis.table <- function(taxon) {
+  cc_texas <- cc_matrix(taxon %>% filter(hometown %in% c("houston", "dallas", "austin")))
+  texas_perm <- adonis_cc_region(cc_texas)
+  texas_r2 <- adonis_r2(texas_perm)
+  texas_p <- adonis_p(texas_perm)
+  
+  cc_atlantic <- cc_matrix(taxon %>% filter(hometown %in% c("boston", "newyork", "washingtondc")))
+  atlantic <- adonis_cc_region(cc_atlantic)  
+  atlantic_perm <- adonis_cc_region(cc_atlantic)
+  atlantic_r2 <- adonis_r2(atlantic_perm)
+  atlantic_p <- adonis_p(atlantic_perm)
+  
+  cc_pacific <- cc_matrix(taxon %>% filter(hometown %in% c("sanfrancisco", "losangeles", "seattle")))
+  pacific_perm <- adonis_cc_region(cc_pacific)
+  pacific_r2 <- adonis_r2(pacific_perm)
+  pacific_p <- adonis_p(pacific_perm)
+  
+  cc_central <- cc_matrix(taxon %>% filter(hometown %in% c("saltlakecity", "minneapolis", "chicago")))
+  central_perm <- adonis_cc_region(cc_central)
+  central_r2 <- adonis_r2(central_perm)
+  central_p <- adonis_p(central_perm)
+  
+  adonis_table <- tribble(
+    ~city, ~R2,  ~p,
+    "Texas", texas_r2,  texas_p,
+    "Atlantic", atlantic_r2,  atlantic_p,
+    "Pacific", pacific_r2, pacific_p,
+    "Central", central_r2, central_p
+  )
+  print(adonis_table)
+  
+}
+# ////////////////////
 # Extract R2
 adonis_r2 <- function (perm) {
   r2 <- perm[[1]][["R2"]][[1]]

@@ -4,7 +4,6 @@
 # Specificly: This is the main code that pulls everything together
 
 
-
 # *************************************************************
 # FIRST THINGS FIRST
 # *************************************************************
@@ -45,16 +44,31 @@ gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda") %>% mutate 
 # *************************************************************
 # COMMUNITY COMPOSITION
 # *************************************************************
+source('cc_functions.r')
 
-# Run the community compostion analysis 
-source('cc.r')
-cc(taxa="all_wfreq")
-cc(taxa="plants")
-cc(taxa="animals")
+# All Taxa
+cc_all <- cc_matrix(all_wfreq)
+cc_all_env <- cc_env(cc_all)
+plot_cc_us(cc_all, cc_all_env, "All taxa")
+plot_cc_region_4(all_wfreq, "All taxa")
 
-# Plot community comppostion figures
-plots <- Explore_results(readPath='Output',writePath='Results')
+# All Plants
+cc_plants <- cc_matrix(plants) 
+cc_plants_env <- cc_env(cc_plants)
+plot_cc_us(cc_plants, cc_plants_env, "Plants")
+plot_cc_region_4(plants, "Plants")
 
+# All Animals
+cc_animals <- cc_matrix(animals) 
+cc_animals_env <- cc_env(cc_animals)
+plot_cc_us(cc_animals, cc_animals_env, "Animals")
+plot_cc_region_4(animals, "Animals")
+
+# Create a table of PERMANOVA results for all taxa in all regions
+tab_all <- adonis.table(all_wfreq) %>% mutate (taxon = "all")
+tab_plants <- adonis.table(all_wfreq) %>% mutate (taxon = "plants")
+tab_animals <- adonis.table(all_wfreq) %>% mutate (taxon = "animals")
+tab <- bind_rows(tab_all, tab_plants, tab_animals)
 
 
 # *************************************************************
