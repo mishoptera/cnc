@@ -1,6 +1,13 @@
-# ************************************
+# Author: Misha Leong
+# Date: October 2018
+# Project: Exploring urban biodiversity patterns with City Nature Challenge iNaturalist data
+# Specificly: This is the main code that pulls everything together
+
+
+
+# *************************************************************
 # FIRST THINGS FIRST
-# ************************************
+# *************************************************************
 
 # load libraries
 library(tidyverse)
@@ -14,7 +21,7 @@ library(stringr)
 load('all_wfreq.Rdata')
 load('cities.Rdata')
 
-# necessary file cleaning
+# some necessary file cleaning
 all_wfreq$scientific_name <- str_replace(all_wfreq$scientific_name,"Columba livia domestica", "Columba livia")
 all_wfreq$scientific_name <- as.factor(all_wfreq$scientific_name)
 
@@ -33,6 +40,25 @@ amphibians <- all_wfreq %>% filter(taxon_class_name == "Amphibia") %>% mutate (t
 mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia") %>% mutate (taxon="mammals")
 gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda") %>% mutate (taxon="gastropods")
 
-# ************************************
+
+
+# *************************************************************
 # COMMUNITY COMPOSITION
-# ************************************
+# *************************************************************
+
+# Run the community compostion analysis 
+source('cc.r')
+cc(taxa="all_wfreq")
+cc(taxa="plants")
+cc(taxa="animals")
+
+# Plot community comppostion figures
+plots <- Explore_results(readPath='Output',writePath='Results')
+
+
+
+# *************************************************************
+# INDIVIDUAL SPECIES PATTERNS
+# *************************************************************
+
+
