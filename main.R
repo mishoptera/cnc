@@ -75,5 +75,15 @@ tab
 # *************************************************************
 # INDIVIDUAL SPECIES PATTERNS
 # *************************************************************
-
+source('isp_functions.r')
+ranks_dicots <- create_big_table(dicots)
+ranks_monocots <- create_big_table(monocots)
+ranks_ferns <- create_big_table(ferns)
+ranks_conifers <- create_big_table(conifers)
+ranks_birds <- create_big_table(birds)
+ranks_insects <- create_big_table(insects)
+ranks_reptiles <- create_big_table(reptiles)
+ranks_amphibians <- create_big_table(amphibians)
+ranks_mammals <- create_big_table(mammals)
+ranks_gastropods <- create_big_table(gastropods)
 
