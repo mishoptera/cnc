@@ -69,6 +69,7 @@ tab_all <- adonis.table(all_wfreq) %>% mutate (taxon = "all")
 tab_plants <- adonis.table(all_wfreq) %>% mutate (taxon = "plants")
 tab_animals <- adonis.table(all_wfreq) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
+tab
 
 
 # *************************************************************
