@@ -69,7 +69,7 @@ tab_all <- adonis.table(all_wfreq) %>% mutate (taxon = "all")
 tab_plants <- adonis.table(all_wfreq) %>% mutate (taxon = "plants")
 tab_animals <- adonis.table(all_wfreq) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
-tab
+write.csv(tab, "permanova_results.csv")
 
 
 # *************************************************************
@@ -111,3 +111,54 @@ arm_mammals <- small_table(ranks_mammals)
 arm_gastropods <- small_table(ranks_gastropods)
 arm_insects <- small_table(ranks_insects)
 arm_reptiles <- small_table(ranks_reptiles)
+
+# one table to bind them all
+big_birds <- st_birds %>%
+  left_join(select(st3_birds, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="birds")
+
+big_mammals <- st_mammals %>%
+  left_join(select(st3_mammals, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="mammals")
+
+big_reptiles <- st_reptiles %>%
+  left_join(select(st3_reptiles, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="reptiles")
+
+big_amphibians <- st_amphibians %>%
+  left_join(select(st3_amphibians, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="amphibians")
+
+big_gastropods <- st_gastropods %>%
+  left_join(select(st3_gastropods, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="gastropods")
+
+big_insects <- st_insects %>%
+  left_join(select(st3_insects, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="insects")
+
+big_dicots <- st_dicots %>%
+  left_join(select(st3_dicots, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="dicots")
+
+big_monocots <- st_monocots %>%
+  left_join(select(st3_monocots, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="monocots")
+
+big_ferns <- st_ferns %>%
+  left_join(select(st3_ferns, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="ferns")
+
+big_conifers <- st_conifers %>%
+  left_join(select(st3_conifers, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="conifers")
+
+names <- all_wfreq %>%
+  select(scientific_name:common_name) %>%
+  unique()
+
+big_everything <- big_birds %>%
+  bind_rows(big_mammals, big_reptiles, big_amphibians, big_gastropods, big_insects, big_dicots, big_monocots, big_ferns, big_conifers) %>%
+  left_join(names, by="scientific_name")
+
+write.csv(big_everything, "big_everything.csv")
