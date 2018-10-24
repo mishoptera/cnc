@@ -135,3 +135,19 @@ small_table3 <- function(big_table) {
 # *************************************************************
 # FUNCTIONS FOR AVERAGED RANKING METRIC
 # *************************************************************
+small_table <- function(big_table) {
+  n.mean <- big_table %>% select(contains("n_")) %>% rowMeans(., na.rm = TRUE)
+  d1.mean <- big_table %>% select(contains("d1_")) %>% rowMeans(., na.rm = TRUE)
+  d2.mean <- big_table %>% select(contains("d2_")) %>% rowMeans(., na.rm = TRUE)
+  d3.mean <- big_table %>% select(contains("d3_")) %>% rowMeans(., na.rm = TRUE)
+  d4.mean <- big_table %>% select(contains("d4_")) %>% rowMeans(., na.rm = TRUE)
+  
+  temp <- big_table %>% 
+    select(scientific_name, count, rank) %>%
+    cbind(n.mean, d1.mean, d2.mean, d3.mean, d4.mean) %>%
+    #mutate(n.diff = rank-n.mean, d1.diff = rank-d1.mean, d2.diff = rank-d2.mean, d3.diff = rank-d3.mean, d4.diff = rank-d4.mean) %>%
+    #filter(count >= 30) %>%
+    arrange((rank))
+  
+  return(temp)
+}
