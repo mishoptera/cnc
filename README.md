@@ -1,7 +1,2 @@
-# cnc
-city nature challenge stuff
-test to see if I can figure out how to do version control
-clearly I don't know how to do separate lines
-maybe I have to do this/
-who knows
-# whatever
+# Exploring urban biodiversity patterns with citizen science data
+This project contains all the data and scripts required to analyze 2016-2018 City Nature Challenge data for our paper.
