@@ -111,6 +111,8 @@ arm_mammals <- small_table(ranks_mammals)
 arm_gastropods <- small_table(ranks_gastropods)
 arm_insects <- small_table(ranks_insects)
 arm_reptiles <- small_table(ranks_reptiles)
+arm_amphibians <- small_table(ranks_amphibians)
+
 
 # one table to bind them all
 big_birds <- cam_birds %>%
