@@ -103,14 +103,35 @@ create_big_table <- function(taxa)  {
 }
 
 
+# *************************************************************
+# FUNCTIONS FOR CITY AGGREGATION METRIC
+# *************************************************************
 
-ranks_dicots <- create_big_table(dicots)
-ranks_monocots <- create_big_table(monocots)
-ranks_ferns <- create_big_table(ferns)
-ranks_conifers <- create_big_table(conifers)
-ranks_birds <- create_big_table(birds)
-ranks_insects <- create_big_table(insects)
-ranks_reptiles <- create_big_table(reptiles)
-ranks_amphibians <- create_big_table(amphibians)
-ranks_mammals <- create_big_table(mammals)
-ranks_gastropods <- create_big_table(gastropods)
+count_high <- function(temp_vector) {
+  length(which(temp_vector < 10000))
+}
+
+small_table3 <- function(big_table) {
+  n.app <- big_table %>% select(contains("n_")) %>% apply(., 1, count_high)
+  d1.app <- big_table %>% select(contains("d1_")) %>% apply(., 1, count_high)
+  d2.app <- big_table %>% select(contains("d2_")) %>% apply(., 1, count_high)
+  d3.app <- big_table %>% select(contains("d3_")) %>% apply(., 1, count_high)
+  d4.app <- big_table %>% select(contains("d4_")) %>% apply(., 1, count_high)
+  
+  temp <- big_table %>% 
+    select(scientific_name, count, rank) %>%
+    cbind(n.app, d1.app, d2.app, d3.app, d4.app) %>%
+    #filter(count >= 30) %>%
+    rename(n=n.app, d1=d1.app, d2=d2.app, d3=d3.app, d4=d4.app) %>%
+    mutate(total=n+d1+d2+d3+d4) %>%
+    #filter(total >=10) %>%
+    arrange(rank)
+  
+  
+  return(temp)
+}
+
+
+# *************************************************************
+# FUNCTIONS FOR AVERAGED RANKING METRIC
+# *************************************************************
