@@ -76,6 +76,8 @@ tab
 # INDIVIDUAL SPECIES PATTERNS
 # *************************************************************
 source('isp_functions.r')
+
+# big ranking tables
 ranks_dicots <- create_big_table(dicots)
 ranks_monocots <- create_big_table(monocots)
 ranks_ferns <- create_big_table(ferns)
@@ -87,3 +89,25 @@ ranks_amphibians <- create_big_table(amphibians)
 ranks_mammals <- create_big_table(mammals)
 ranks_gastropods <- create_big_table(gastropods)
 
+# create city aggregation metric tables
+cam_dicots <- small_table3(ranks_dicots)
+cam_monocots <- small_table3(ranks_monocots)
+cam_ferns <- small_table3(ranks_ferns)
+cam_conifers <- small_table3(ranks_conifers)
+cam_birds <- small_table3(ranks_birds)
+cam_mammals <- small_table3(ranks_mammals)
+cam_gastropods <- small_table3(ranks_gastropods)
+cam_insects <- small_table3(ranks_insects)
+cam_reptiles <- small_table3(ranks_reptiles)
+cam_amphibians <- small_table3(ranks_amphibians)
+
+# create averaged ranking metric tables
+arm_dicots <- small_table(ranks_dicots)
+arm_monocots <- small_table(ranks_monocots)
+arm_ferns <- small_table(ranks_ferns)
+arm_conifers <- small_table(ranks_conifers)
+arm_birds <- small_table(ranks_birds)
+arm_mammals <- small_table(ranks_mammals)
+arm_gastropods <- small_table(ranks_gastropods)
+arm_insects <- small_table(ranks_insects)
+arm_reptiles <- small_table(ranks_reptiles)
