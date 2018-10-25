@@ -40,6 +40,26 @@ mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia") %>% mutate (taxo
 gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda") %>% mutate (taxon="gastropods")
 
 
+# *************************************************************
+# FIGURE 1 - MAP OF CITIES WITH RELATIVE No. OBSERVATIONS
+# *************************************************************
+# Get basemap
+map <- get_googlemap(center = c(-98, 38), zoom = 4,
+                     color = "bw",
+                     style = "feature:road|visibility:off&style=element:labels|visibility:off&style=feature:administrative|visibility:off")
+
+# Plot cities onto map basic
+ggmap(map) +
+  geom_point(data = cities, aes(x = lon, y = lat))
+
+# Plot cities onto map with colors, sizes, and labels
+ggmap(map) +
+  geom_point(data = cities, aes(x = lon, y = lat, size = num_obs, color = region)) +
+  labs(colour = "Regions", size = "Records")+
+  geom_text_repel(data = cities, aes(x = lon, y = lat, label = official_hometown))
+
+# Save it for export
+ggsave("cnc_map.tiff", width = 20, height = 15, units = "cm")
 
 # *************************************************************
 # COMMUNITY COMPOSITION
