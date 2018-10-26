@@ -172,3 +172,32 @@ big_over100obs <- big_everything %>%
 
 write.csv(big_everything, "big_everything.csv")
 write.csv(big_over100obs, "big_over100obs.csv")
+
+##*************************
+## Some final summary stats to extract more things of interest
+totals <- plants %>% 
+  union (animals) %>%
+  summarise (num_species = n_distinct (scientific_name),
+             total_obs = n())
+
+everything <- plants %>%
+  union (animals) %>%
+  group_by(taxon_class_name)%>%
+  summarise (num_species =  n_distinct(scientific_name),
+             num_obs = n(), r_all_species = num_species / 4545, r_all_obs = num_obs / 63375) %>%
+  arrange(desc(r_all_obs))
+
+top100 <- plants %>%
+  union (animals) %>%
+  group_by(scientific_name)%>%
+  mutate (count = n()) %>%
+  group_by(taxon_class_name)%>%
+  filter(count>=100) %>%
+  summarise (num_species =  n_distinct(scientific_name),
+             num_obs = n(), r_100 = num_species / 100) %>%
+  left_join(everything, by = "taxon_class_name") %>%
+  mutate (difference = r_all - r_100) %>%
+  arrange (desc(r_all)) 
+
+
+top100
