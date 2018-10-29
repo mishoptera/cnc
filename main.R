@@ -20,7 +20,7 @@ library(stringr)
 load('all_wfreq.Rdata')
 load('cities.Rdata')
 
-# some necessary file cleaning
+# some last minute file cleaning
 all_wfreq$scientific_name <- str_replace(all_wfreq$scientific_name,"Columba livia domestica", "Columba livia")
 all_wfreq$scientific_name <- as.factor(all_wfreq$scientific_name)
 
@@ -42,7 +42,7 @@ gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda") %>% mutate 
 
 
 # *************************************************************
-# MAP OF CNC CITIES
+# MAP OF CNC CITIES (Figure 1)
 # *************************************************************
 map <- get_googlemap(center = c(-98, 38), zoom = 4,
                      color = "bw",
@@ -85,12 +85,12 @@ cc_animals_env <- cc_env(cc_animals)
 plot_cc_us(cc_animals, cc_animals_env, "Animals")
 plot_cc_region_4(animals, "Animals")
 
-# Create a table of PERMANOVA results for all taxa in all regions
+# Create a table of PERMANOVA results for all taxa in all regions.
 tab_all <- adonis.table(all_wfreq) %>% mutate (taxon = "all")
 tab_plants <- adonis.table(all_wfreq) %>% mutate (taxon = "plants")
 tab_animals <- adonis.table(all_wfreq) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "permanova_results.csv")
+write.csv(tab, "permanova_results.csv")       # Table 2
 
 
 # *************************************************************
@@ -192,7 +192,7 @@ big_over100obs <- big_everything %>%
   filter(count>=100)
 
 write.csv(big_everything, "big_everything.csv")
-write.csv(big_over100obs, "big_over100obs.csv")
+write.csv(big_over100obs, "big_over100obs.csv")    # Table 3
 
 ##*************************
 ## Some final summary stats to extract more things of interest
@@ -219,6 +219,4 @@ top100 <- plants %>%
   left_join(everything, by = "taxon_class_name") %>%
   mutate (difference = r_all - r_100) %>%
   arrange (desc(r_all)) 
-
-
-top100
+top100     # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
