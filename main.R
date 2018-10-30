@@ -239,6 +239,7 @@ everything <- plants %>%
              all_ratio_obs = all_num_obs / total_obs) %>%
   arrange(desc(all_num_species)) %>%
   left_join(over100, by = "taxon_class_name") %>%
-  mutate (difference = all_ratio_obs - subset_ratio_obs) 
+  mutate (diff_species = all_ratio_species - subset_ratio_species,
+          diff_obs = all_ratio_obs - subset_ratio_obs) 
 everything    # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
 write.csv(everything, "summary_over100obs.csv")  #Table 4
