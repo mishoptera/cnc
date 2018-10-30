@@ -63,7 +63,7 @@ ggsave("cnc_map.tiff", width = 20, height = 15, units = "cm")
 
 
 # *************************************************************
-# COMMUNITY COMPOSITION
+# COMMUNITY COMPOSITION (Figure 2, Figure 3, and Table 2)
 # *************************************************************
 source('cc_functions.r')
 
@@ -94,7 +94,7 @@ write.csv(tab, "permanova_results.csv")       # Table 2
 
 
 # *************************************************************
-# INDIVIDUAL SPECIES PATTERNS
+# INDIVIDUAL SPECIES PATTERNS (Table 2 & Table 4)
 # *************************************************************
 source('isp_functions.r')
 
@@ -196,27 +196,49 @@ write.csv(big_over100obs, "big_over100obs.csv")    # Table 3
 
 ##*************************
 ## Some final summary stats to extract more things of interest
+
+
+# setting some variables values
 totals <- plants %>% 
   union (animals) %>%
   summarise (num_species = n_distinct (scientific_name),
-             total_obs = n())
+             num_obs = n())
+total_species <- totals$num_species
+total_obs <- totals$num_obs
 
-everything <- plants %>%
+subsets <- plants %>% 
   union (animals) %>%
-  group_by(taxon_class_name)%>%
-  summarise (num_species =  n_distinct(scientific_name),
-             num_obs = n(), r_all_species = num_species / 4545, r_all_obs = num_obs / 63375) %>%
-  arrange(desc(r_all_obs))
+  group_by(scientific_name)%>%
+  mutate (count = n()) %>%
+  filter(count>=100) %>%
+  ungroup() %>%
+  summarise (num_species = n_distinct (scientific_name),
+             num_obs = n())
+subset_species <- subsets$num_species
+subset_obs <- subsets$num_obs
 
-top100 <- plants %>%
+
+over100 <- plants %>%
   union (animals) %>%
   group_by(scientific_name)%>%
   mutate (count = n()) %>%
   group_by(taxon_class_name)%>%
   filter(count>=100) %>%
-  summarise (num_species =  n_distinct(scientific_name),
-             num_obs = n(), r_100 = num_species / 100) %>%
-  left_join(everything, by = "taxon_class_name") %>%
-  mutate (difference = r_all - r_100) %>%
-  arrange (desc(r_all)) 
-top100     # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
+  summarise (subset_num_species =  n_distinct(scientific_name),
+             subset_num_obs = n(), 
+             subset_ratio_species = subset_num_species / subset_species,
+             subset_ratio_obs = subset_num_obs / subset_obs) 
+  
+  
+everything <- plants %>%
+  union (animals) %>%
+  group_by(taxon_class_name)%>%
+  summarise (all_num_species =  n_distinct(scientific_name),
+             all_num_obs = n(), 
+             all_ratio_species = all_num_species / total_species, 
+             all_ratio_obs = all_num_obs / total_obs) %>%
+  arrange(desc(all_num_species)) %>%
+  left_join(over100, by = "taxon_class_name") %>%
+  mutate (difference = all_ratio_obs - subset_ratio_obs) 
+everything    # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
+write.csv(everything, "summary_over100obs.csv")  #Table 4
