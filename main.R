@@ -70,8 +70,8 @@ source('cc_functions.r')
 # All Taxa
 cc_all <- cc_matrix(all_wfreq)
 cc_all_env <- cc_env(cc_all)
-plot_cc_us(cc_all, cc_all_env, "All taxa")
-plot_cc_region_4(all_wfreq, "All taxa")
+plot_cc_us(cc_all, cc_all_env, "All taxa")          # Figure 2
+plot_cc_region_4(all_wfreq, "All taxa")             # Figure 3
 
 # All Plants
 cc_plants <- cc_matrix(plants) 
@@ -94,7 +94,7 @@ write.csv(tab, "permanova_results.csv")       # Table 2
 
 
 # *************************************************************
-# INDIVIDUAL SPECIES PATTERNS (Table 2 & Table 4)
+# INDIVIDUAL SPECIES PATTERNS (Table 3)
 # *************************************************************
 source('isp_functions.r')
 
@@ -194,9 +194,10 @@ big_over100obs <- big_everything %>%
 write.csv(big_everything, "big_everything.csv")
 write.csv(big_over100obs, "big_over100obs.csv")    # Table 3
 
-##*************************
-## Some final summary stats to extract more things of interest
 
+# *************************************************************
+# SUMMARY STATS OF INTEREST (Table 4)
+# *************************************************************
 
 # setting some variables values
 totals <- plants %>% 
@@ -242,4 +243,4 @@ everything <- plants %>%
   mutate (diff_species = all_ratio_species - subset_ratio_species,
           diff_obs = all_ratio_obs - subset_ratio_obs) 
 everything    # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
-write.csv(everything, "summary_over100obs.csv")  #Table 4
+write.csv(everything, "summary_over100obs.csv")  # Table 5
