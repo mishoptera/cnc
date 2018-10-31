@@ -98,42 +98,24 @@ write.csv(tab, "permanova_results.csv")       # Table 2
 # *************************************************************
 source('isp_functions.r')
 
-# big ranking tables
-ranks_dicots <- create_big_table(dicots)
-ranks_monocots <- create_big_table(monocots)
-ranks_ferns <- create_big_table(ferns)
-ranks_conifers <- create_big_table(conifers)
-ranks_birds <- create_big_table(birds)
-ranks_insects <- create_big_table(insects)
-ranks_reptiles <- create_big_table(reptiles)
-ranks_amphibians <- create_big_table(amphibians)
-ranks_mammals <- create_big_table(mammals)
-ranks_gastropods <- create_big_table(gastropods)
+taxa <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
+
+# create big ranking tables for each taxa
+lapply(taxa, function(i){
+ assign(paste0("ranks_", i), create_big_table(get(i)))
+})
 
 # create city aggregation metric tables
-cam_dicots <- small_table3(ranks_dicots)
-cam_monocots <- small_table3(ranks_monocots)
-cam_ferns <- small_table3(ranks_ferns)
-cam_conifers <- small_table3(ranks_conifers)
-cam_birds <- small_table3(ranks_birds)
-cam_mammals <- small_table3(ranks_mammals)
-cam_gastropods <- small_table3(ranks_gastropods)
-cam_insects <- small_table3(ranks_insects)
-cam_reptiles <- small_table3(ranks_reptiles)
-cam_amphibians <- small_table3(ranks_amphibians)
+lapply(taxa, function(i){
+  ranks_table <- eval(as.name(paste0("ranks_", i)))
+  assign(paste0("cam_", i), small_table3(ranks_table))
+})
 
 # create averaged ranking metric tables
-arm_dicots <- small_table(ranks_dicots)
-arm_monocots <- small_table(ranks_monocots)
-arm_ferns <- small_table(ranks_ferns)
-arm_conifers <- small_table(ranks_conifers)
-arm_birds <- small_table(ranks_birds)
-arm_mammals <- small_table(ranks_mammals)
-arm_gastropods <- small_table(ranks_gastropods)
-arm_insects <- small_table(ranks_insects)
-arm_reptiles <- small_table(ranks_reptiles)
-arm_amphibians <- small_table(ranks_amphibians)
-
+lapply(taxa, function(i){
+  ranks_table <- eval(as.name(paste0("ranks_", i)))
+  assign(paste0("arm_", i), small_table(ranks_table))
+})
 
 # one table to bind them all
 big_birds <- cam_birds %>%
