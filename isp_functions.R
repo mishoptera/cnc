@@ -151,3 +151,13 @@ small_table <- function(big_table) {
   
   return(temp)
 }
+
+
+# *************************************************************
+# FUNCTIONS TO COMBINE INTO ONE MAIN TABLE
+# *************************************************************
+bigify <- function(cam, arm, i){
+  cam %>%
+    left_join(select(arm, -c(count, rank)), by="scientific_name") %>%
+    mutate (taxon=i)
+}
