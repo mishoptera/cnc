@@ -125,11 +125,12 @@ lapply(taxa, function(i){
 })
 
 
-
+# to be able to add common names to table
 names <- all_wfreq %>%
   select(scientific_name:common_name) %>%
   unique() 
 
+# creating a single table with all of the above
 big_everything <- big_birds %>%
   bind_rows(big_mammals, big_reptiles, big_amphibians, big_gastropods, big_insects, big_dicots, big_monocots, big_ferns, big_conifers) %>%
   left_join(names, by="scientific_name") %>%
@@ -137,6 +138,7 @@ big_everything <- big_birds %>%
   select(common_name, everything()) %>%
   select(taxon, everything())
 
+# to make it a bit manageable to share in paper as a table
 big_over100obs <- big_everything %>%
   arrange(desc(count)) %>%
   filter(count>=100)
