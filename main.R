@@ -17,8 +17,8 @@ library(ggpubr)
 library(stringr)
 
 # load files
-load('all_wfreq.Rdata')
-load('cities.Rdata')
+load('data/all_wfreq.Rdata')
+load('data/cities.Rdata')
 
 # some last minute file cleaning
 all_wfreq$scientific_name <- str_replace(all_wfreq$scientific_name,"Columba livia domestica", "Columba livia")
@@ -59,13 +59,13 @@ ggmap(map) +
   geom_text_repel(data = cities, aes(x = lon, y = lat, label = official_hometown))
 
 # Save it for export
-ggsave("cnc_map.tiff", width = 20, height = 15, units = "cm")
+ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
 
 
 # *************************************************************
 # COMMUNITY COMPOSITION (Figure 2, Figure 3, and Table 2)
 # *************************************************************
-source('cc_functions.r')
+source('functions/cc_functions.r')
 
 # All Taxa
 cc_all <- cc_matrix(all_wfreq)
@@ -90,13 +90,13 @@ tab_all <- adonis.table(all_wfreq) %>% mutate (taxon = "all")
 tab_plants <- adonis.table(all_wfreq) %>% mutate (taxon = "plants")
 tab_animals <- adonis.table(all_wfreq) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "permanova_results.csv")       # Table 2
+write.csv(tab, "figures_n_tables/permanova_results.csv")       # Table 2
 
 
 # *************************************************************
 # INDIVIDUAL SPECIES PATTERNS (Table 3)
 # *************************************************************
-source('isp_functions.r')
+source('functions/isp_functions.r')
 
 taxa <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
 
@@ -124,7 +124,6 @@ lapply(taxa, function(i){
 
 })
 
-
 # to be able to add common names to table
 names <- all_wfreq %>%
   select(scientific_name:common_name) %>%
@@ -143,8 +142,8 @@ big_over100obs <- big_everything %>%
   arrange(desc(count)) %>%
   filter(count>=100)
 
-write.csv(big_everything, "big_everything.csv")
-write.csv(big_over100obs, "big_over100obs.csv")    # Table 3
+write.csv(big_everything, "figures_n_tables/big_everything.csv")
+write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 3
 
 
 # *************************************************************
@@ -195,4 +194,4 @@ everything <- plants %>%
   mutate (diff_species = all_ratio_species - subset_ratio_species,
           diff_obs = all_ratio_obs - subset_ratio_obs) 
 everything    # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
-write.csv(everything, "summary_over100obs.csv")  # Table 5
+write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
