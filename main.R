@@ -3,7 +3,7 @@
 # Project: Exploring urban biodiversity patterns with City Nature Challenge iNaturalist data
 # Specificly: This is the main code that pulls everything together
 
-test
+
 # *************************************************************
 # FIRST THINGS FIRST
 # *************************************************************
@@ -85,12 +85,19 @@ cc_animals_env <- cc_env(cc_animals)
 plot_cc_us(cc_animals, cc_animals_env, "Animals")
 plot_cc_region_4(animals, "Animals")
 
-# Create a table of PERMANOVA results for all taxa in all regions.
-tab_all <- adonis.table(all_wfreq) %>% mutate (taxon = "all")
-tab_plants <- adonis.table(all_wfreq) %>% mutate (taxon = "plants")
-tab_animals <- adonis.table(all_wfreq) %>% mutate (taxon = "animals")
+# Create a table of PERMANOVA results for all taxa in all regions, nested by hometown.
+tab_all <- adonis.table.hometown(all_wfreq) %>% mutate (taxon = "all")
+tab_plants <- adonis.table.hometown(all_wfreq) %>% mutate (taxon = "plants")
+tab_animals <- adonis.table.hometown(all_wfreq) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "figures_n_tables/permanova_results.csv")       # Table 2
+write.csv(tab, "figures_n_tables/permanova_results_hometown.csv")       # Table 2
+
+# Create a table of PERMANOVA results for all taxa in all regions, nested by land cover type.
+tab_all <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "all")
+tab_plants <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "plants")
+tab_animals <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "animals")
+tab <- bind_rows(tab_all, tab_plants, tab_animals)
+write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 2
 
 
 # *************************************************************
