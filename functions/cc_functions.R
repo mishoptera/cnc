@@ -192,12 +192,21 @@ plot_cc_region_4 <- function (taxon, title) {
 # *************************************************************
 
 # ////////////////////
-# main PERMANOVA analysis
+# PERMANOVA analysis nested by hometown
 adonis_cc_hometown <- function (all_matrix) {
   all_env <- cc_env(all_matrix)
   mod_all <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
   lc_perm <- adonis(all_matrix ~ all_env$landcover_group, data = all_env, 
                     strata= all_env$hometown, permutations = 999)
+  return (lc_perm)
+}
+
+# PERMANOVA analysis nested by land cover type
+adonis_cc_lc <- function (all_matrix) {
+  all_env <- cc_env(all_matrix)
+  mod_all <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
+  lc_perm <- adonis(all_matrix ~ all_env$hometown, data = all_env, 
+                    strata= all_env$landcover_group, permutations = 999)
   return (lc_perm)
 }
 
@@ -240,6 +249,47 @@ adonis.table.hometown <- function(taxon) {
   print(adonis_table)
   
 }
+
+# ////////////////////
+# PERMANOVA analyses nested by landcover type
+adonis.table.lc <- function(taxon) {
+  cc_usa <- cc_matrix(taxon)
+  usa_perm <- adonis_cc_lc(cc_usa)
+  usa_r2 <- adonis_r2(usa_perm)
+  usa_p <- adonis_p(usa_perm)
+  
+  cc_texas <- cc_matrix(taxon %>% filter(hometown %in% c("houston", "dallas", "austin")))
+  texas_perm <- adonis_cc_lc(cc_texas)
+  texas_r2 <- adonis_r2(texas_perm)
+  texas_p <- adonis_p(texas_perm)
+  
+  cc_atlantic <- cc_matrix(taxon %>% filter(hometown %in% c("boston", "newyork", "washingtondc")))
+  atlantic_perm <- adonis_cc_lc(cc_atlantic)
+  atlantic_r2 <- adonis_r2(atlantic_perm)
+  atlantic_p <- adonis_p(atlantic_perm)
+  
+  cc_pacific <- cc_matrix(taxon %>% filter(hometown %in% c("sanfrancisco", "losangeles", "seattle")))
+  pacific_perm <- adonis_cc_lc(cc_pacific)
+  pacific_r2 <- adonis_r2(pacific_perm)
+  pacific_p <- adonis_p(pacific_perm)
+  
+  cc_central <- cc_matrix(taxon %>% filter(hometown %in% c("saltlakecity", "minneapolis", "chicago")))
+  central_perm <- adonis_cc_lc(cc_central)
+  central_r2 <- adonis_r2(central_perm)
+  central_p <- adonis_p(central_perm)
+  
+  adonis_table <- tribble(
+    ~Region, ~R2,  ~p,
+    "All USA", usa_r2, usa_p,
+    "Texas", texas_r2,  texas_p,
+    "Atlantic", atlantic_r2,  atlantic_p,
+    "Pacific", pacific_r2, pacific_p,
+    "Central", central_r2, central_p
+  )
+  print(adonis_table)
+  
+}
+
 # ////////////////////
 # Extract R2
 adonis_r2 <- function (perm) {

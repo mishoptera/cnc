@@ -97,11 +97,11 @@ tab_all <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "all")
 tab_plants <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "plants")
 tab_animals <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 2
+write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 3
 
 
 # *************************************************************
-# INDIVIDUAL SPECIES PATTERNS (Table 3)
+# INDIVIDUAL SPECIES PATTERNS (Table 4)
 # *************************************************************
 source('functions/isp_functions.r')
 
