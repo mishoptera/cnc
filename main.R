@@ -150,11 +150,11 @@ big_over100obs <- big_everything %>%
   filter(count>=100)
 
 write.csv(big_everything, "figures_n_tables/big_everything.csv")
-write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 3
+write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
 
 
 # *************************************************************
-# SUMMARY STATS OF INTEREST (Table 4)
+# SUMMARY STATS OF INTEREST (Table 5)
 # *************************************************************
 
 # setting some variables values

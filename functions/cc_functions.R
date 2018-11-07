@@ -211,7 +211,7 @@ adonis_cc_lc <- function (all_matrix) {
 }
 
 # ////////////////////
-# PERMANOVA analyses nested by hometown
+# Assemble table of PERMANOVA analyses nested by hometown
 adonis.table.hometown <- function(taxon) {
   cc_usa <- cc_matrix(taxon)
   usa_perm <- adonis_cc_hometown(cc_usa)
@@ -251,7 +251,7 @@ adonis.table.hometown <- function(taxon) {
 }
 
 # ////////////////////
-# PERMANOVA analyses nested by landcover type
+# Assemble table of PERMANOVA analyses nested by landcover type
 adonis.table.lc <- function(taxon) {
   cc_usa <- cc_matrix(taxon)
   usa_perm <- adonis_cc_lc(cc_usa)
