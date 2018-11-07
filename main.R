@@ -87,15 +87,15 @@ plot_cc_region_4(animals, "Animals")
 
 # Create a table of PERMANOVA results for all taxa in all regions, nested by hometown.
 tab_all <- adonis.table.hometown(all_wfreq) %>% mutate (taxon = "all")
-tab_plants <- adonis.table.hometown(all_wfreq) %>% mutate (taxon = "plants")
-tab_animals <- adonis.table.hometown(all_wfreq) %>% mutate (taxon = "animals")
+tab_plants <- adonis.table.hometown(plants) %>% mutate (taxon = "plants")
+tab_animals <- adonis.table.hometown(animals) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
 write.csv(tab, "figures_n_tables/permanova_results_hometown.csv")       # Table 2
 
 # Create a table of PERMANOVA results for all taxa in all regions, nested by land cover type.
 tab_all <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "all")
-tab_plants <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "plants")
-tab_animals <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "animals")
+tab_plants <- adonis.table.lc(plants) %>% mutate (taxon = "plants")
+tab_animals <- adonis.table.lc(animals) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
 write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 3
 
