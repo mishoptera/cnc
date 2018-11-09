@@ -65,7 +65,6 @@ create_big_table <- function(taxa)  {
   total  <- taxa %>%
     group_by(scientific_name) %>%
     summarise(count = n()) %>%
-    #filter(count>=15)%>%
     arrange(desc(count)) %>%
     mutate(rank = rank(desc(count), ties.method="random"))
   
@@ -121,10 +120,8 @@ small_table3 <- function(big_table) {
   temp <- big_table %>% 
     select(scientific_name, count, rank) %>%
     cbind(n.app, d1.app, d2.app, d3.app, d4.app) %>%
-    #filter(count >= 30) %>%
     rename(n=n.app, d1=d1.app, d2=d2.app, d3=d3.app, d4=d4.app) %>%
     mutate(total=n+d1+d2+d3+d4) %>%
-    #filter(total >=10) %>%
     arrange(rank)
   
   
@@ -145,8 +142,6 @@ small_table <- function(big_table) {
   temp <- big_table %>% 
     select(scientific_name, count, rank) %>%
     cbind(n.mean, d1.mean, d2.mean, d3.mean, d4.mean) %>%
-    #mutate(n.diff = rank-n.mean, d1.diff = rank-d1.mean, d2.diff = rank-d2.mean, d3.diff = rank-d3.mean, d4.diff = rank-d4.mean) %>%
-    #filter(count >= 30) %>%
     arrange((rank))
   
   return(temp)
