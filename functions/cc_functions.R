@@ -62,6 +62,8 @@ plot_cc_us <- function (all_matrix, all_env, title) {
   data_scores <- as.data.frame(scores(mod)) 
   data_scores$hometown <- as.factor(cc_all_env$hometown)
   data_scores$landcover <- cc_all_env$landcover_group
+  stress <- signif(mod$stress, digits = 3)
+  subtitle <- paste("2-D Stress =", stress)
   cities_mod <- select(cities, c(hometown, lat, lon, region, official_hometown))
   data_scores <- left_join(data_scores, cities_mod, by = "hometown")
   nice_lc <- tibble(landcover = c("natural", "developed1_open_space", 
@@ -77,7 +79,7 @@ plot_cc_us <- function (all_matrix, all_env, title) {
   cg <- ggplot()+
     geom_point(data=data_scores,aes(x=NMDS1,y=NMDS2,shape=urbanization,colour=region),size=3) + 
     labs (fill = "Regions", colour = "Regions", shape = "Urbanization Levels") +
-    labs(title = "City groupings") +
+    labs(title = "City groupings", subtitle = subtitle) +
     stat_chull(data=data_scores, geom = "polygon", alpha = 0.1, aes(x=NMDS1,y=NMDS2,
                                                                     fill=region, colour = region, group=hometown)) +
     geom_text_repel(data=data_scores_d3, aes(x=NMDS1, y=NMDS2, label=official_hometown)) +
@@ -91,13 +93,13 @@ plot_cc_us <- function (all_matrix, all_env, title) {
           panel.background = element_blank(), 
           panel.grid.major = element_blank(),  #remove major-grid labels
           panel.grid.minor = element_blank(),  #remove minor-grid labels
-          plot.background = element_blank())
+          plot.background = element_blank()) 
   
   # plot it for landcover grouping
   lc <- ggplot()+
     geom_point(data=data_scores,aes(x=NMDS1,y=NMDS2,shape=region, col=urbanization),size=3) + 
     labs (shape = "Regions", colour = "Urbanization Levels", fill = "Urbanization Levels") +
-    labs(title = "Land cover groupings") +
+    labs(title = "Land cover groupings", subtitle = subtitle) +
     stat_chull(data=data_scores, geom = "polygon", alpha = 0.1, aes(x=NMDS1,y=NMDS2,
                                                                     fill=urbanization, color=urbanization)) +
     geom_text_repel(data=data_scores_d3, aes(x=NMDS1, y=NMDS2, label=official_hometown)) +
@@ -130,6 +132,8 @@ plot_cc_region <- function (all_matrix, title) {
   data_scores <- as.data.frame(scores(mod_all)) 
   data_scores$hometown <- as.factor(all_env$hometown)
   data_scores$landcover <- all_env$landcover_group
+  stress <- signif(mod_all$stress, digits = 3)
+  subtitle <- paste("2-D Stress =", stress)
   cities <- select(cities, c(hometown, lat, lon, region, official_hometown))
   data_scores <- left_join(data_scores, cities, by = "hometown")
   nice_lc <- tibble(landcover = c("natural", "developed1_open_space", 
@@ -150,7 +154,7 @@ plot_cc_region <- function (all_matrix, title) {
            fill = guide_legend(order = 2), 
            shape = guide_legend(order = 1)) +
     scale_shape_discrete(guide = FALSE) +
-    labs(title = title) +
+    labs(title = title, subtitle = subtitle) +
     coord_equal() +
     theme(plot.title=element_text(size=20), 
           axis.text.x = element_blank(),  # remove x-axis text
