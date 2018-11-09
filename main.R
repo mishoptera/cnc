@@ -63,7 +63,7 @@ ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
 
 
 # *************************************************************
-# COMMUNITY COMPOSITION (Figure 2, Figure 3, and Table 2)
+# COMMUNITY COMPOSITION (Figure 2, Figure 3, Table 2, Table 3)
 # *************************************************************
 source('functions/cc_functions.r')
 
