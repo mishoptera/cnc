@@ -202,3 +202,6 @@ everything <- plants %>%
           diff_obs = all_ratio_obs - subset_ratio_obs) 
 everything    # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
 write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
+
+# Top10 lists for all cities
+

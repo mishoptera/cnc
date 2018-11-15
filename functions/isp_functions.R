@@ -156,3 +156,37 @@ bigify <- function(cam, arm, i){
     left_join(select(arm, -c(count, rank)), by="scientific_name") %>%
     mutate (taxon=i)
 }
+
+
+#
+# Table for Michelle (top 10 for each city, for each taxon)
+top10 <- function (city, taxa) {
+  taxa %>%
+    filter(hometown == city) %>%
+    group_by(scientific_name) %>%
+    summarise(count = n()) %>%
+    arrange(desc(count)) %>%
+    mutate(rank = rank(desc(count), ties.method="random")) %>%
+    filter (rank < 11) %>%
+    select (scientific_name) %>% #this line can be deleted if needing more info
+    rename(!!city := scientific_name)
+}
+
+michelle <- function(taxa, taxa_name) {
+  top10("austin", taxa) %>%
+    bind_cols (top10("boston", taxa)) %>%
+    bind_cols (top10("chicago", taxa)) %>%
+    bind_cols (top10("dallas", taxa)) %>%
+    bind_cols (top10("houston", taxa)) %>%
+    bind_cols (top10("losangeles", taxa)) %>%
+    bind_cols (top10("miami", taxa)) %>%
+    bind_cols (top10("minneapolis", taxa)) %>%
+    bind_cols (top10("newyork", taxa)) %>%
+    bind_cols (top10("raleigh", taxa)) %>%
+    bind_cols (top10("saltlakecity", taxa)) %>%
+    bind_cols (top10("sanfrancisco", taxa)) %>%
+    bind_cols (top10("seattle", taxa)) %>%
+    bind_cols (top10("washingtondc", taxa)) %>%
+    mutate (taxa_name = taxa_name) %>%
+    select (taxa_name, everything())
+}
