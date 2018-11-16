@@ -152,6 +152,10 @@ big_over100obs <- big_everything %>%
 write.csv(big_everything, "figures_n_tables/big_everything.csv")
 write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
 
+# Top10 lists for all cities
+
+top10_list <- top10_knit(birds,"birds")
+write.csv(top10_list, "figures_n_tables_top10_list.csv")
 
 # *************************************************************
 # SUMMARY STATS OF INTEREST (Table 5)
@@ -204,4 +208,5 @@ everything    # Birds and dicots get overrepresented in the top 100, while insec
 write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
 
 # Top10 lists for all cities
+top10_list <- top10_knit(birds,"birds")
 
