@@ -142,11 +142,36 @@ arm_reptiles <- small_table(ranks_reptiles)
 arm_amphibians <- small_table(ranks_amphibians)
 
 # one table to bind them all
-lapply(taxa, function(i){
-  assign((paste0("big_", i)), bigify(eval(as.name(paste0("cam_", i))), 
-                                      eval(as.name(paste0("arm_", i))), i))
-
-})
+big_birds <- cam_birds %>%
+  left_join(select(arm_birds, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="birds")
+big_mammals <- cam_mammals %>%
+  left_join(select(arm_mammals, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="mammals")
+big_reptiles <- cam_reptiles %>%
+  left_join(select(arm_reptiles, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="reptiles")
+big_amphibians <- cam_amphibians %>%
+  left_join(select(arm_amphibians, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="amphibians")
+big_gastropods <- cam_gastropods %>%
+  left_join(select(arm_gastropods, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="gastropods")
+big_insects <- cam_insects %>%
+  left_join(select(arm_insects, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="insects")
+big_dicots <- cam_dicots %>%
+  left_join(select(arm_dicots, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="dicots")
+big_monocots <- cam_monocots %>%
+  left_join(select(arm_monocots, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="monocots")
+big_ferns <- cam_ferns %>%
+  left_join(select(arm_ferns, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="ferns")
+big_conifers <- cam_conifers %>%
+  left_join(select(arm_conifers, -c(count, rank)), by="scientific_name") %>%
+  mutate (taxon="conifers")
 
 
 # how many cities does each species appear in?
