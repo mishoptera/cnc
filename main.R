@@ -105,24 +105,41 @@ write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 3
 # *************************************************************
 source('functions/isp_functions.r')
 
-taxa <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
-
 # create big ranking tables for each taxa
-lapply(taxa, function(i){
- assign(paste0("ranks_", i), create_big_table(get(i)))
-})
+ranks_dicots <- create_big_table(dicots)
+ranks_monocots <- create_big_table(monocots)
+ranks_ferns <- create_big_table(ferns)
+ranks_conifers <- create_big_table(conifers)
+ranks_birds <- create_big_table(birds)
+ranks_insects <- create_big_table(insects)
+ranks_reptiles <- create_big_table(reptiles)
+ranks_amphibians <- create_big_table(amphibians)
+ranks_mammals <- create_big_table(mammals)
+ranks_gastropods <- create_big_table(gastropods)
 
 # create city aggregation metric tables
-lapply(taxa, function(i){
-  ranks_table <- eval(as.name(paste0("ranks_", i)))
-  assign(paste0("cam_", i), small_table3(ranks_table))
-})
+cam_dicots <- small_table3(ranks_dicots)
+cam_monocots <- small_table3(ranks_monocots)
+cam_ferns <- small_table3(ranks_ferns)
+cam_conifers <- small_table3(ranks_conifers)
+cam_birds <- small_table3(ranks_birds)
+cam_mammals <- small_table3(ranks_mammals)
+cam_gastropods <- small_table3(ranks_gastropods)
+cam_insects <- small_table3(ranks_insects)
+cam_reptiles <- small_table3(ranks_reptiles)
+cam_amphibians <- small_table3(ranks_amphibians)
 
 # create averaged ranking metric tables
-lapply(taxa, function(i){
-  ranks_table <- eval(as.name(paste0("ranks_", i)))
-  assign(paste0("arm_", i), small_table(ranks_table))
-})
+arm_dicots <- small_table(ranks_dicots)
+arm_monocots <- small_table(ranks_monocots)
+arm_ferns <- small_table(ranks_ferns)
+arm_conifers <- small_table(ranks_conifers)
+arm_birds <- small_table(ranks_birds)
+arm_mammals <- small_table(ranks_mammals)
+arm_gastropods <- small_table(ranks_gastropods)
+arm_insects <- small_table(ranks_insects)
+arm_reptiles <- small_table(ranks_reptiles)
+arm_amphibians <- small_table(ranks_amphibians)
 
 # one table to bind them all
 lapply(taxa, function(i){
@@ -131,15 +148,24 @@ lapply(taxa, function(i){
 
 })
 
+
+# how many cities does each species appear in?
+total_cities <- all_wfreq %>%
+  group_by (scientific_name) %>%
+  summarise (num_cities = n_distinct(hometown)) %>%
+  select(scientific_name, num_cities)
+
 # to be able to add common names to table
 names <- all_wfreq %>%
   select(scientific_name:common_name) %>%
-  unique() 
+  unique()
+
 
 # creating a single table with all of the above
 big_everything <- big_birds %>%
   bind_rows(big_mammals, big_reptiles, big_amphibians, big_gastropods, big_insects, big_dicots, big_monocots, big_ferns, big_conifers) %>%
   left_join(names, by="scientific_name") %>%
+  left_join(total_cities, by="scientific_name") %>%
   distinct(scientific_name, .keep_all = TRUE) %>%
   select(common_name, everything()) %>%
   select(taxon, everything())
