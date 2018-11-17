@@ -173,7 +173,6 @@ big_conifers <- cam_conifers %>%
   left_join(select(arm_conifers, -c(count, rank)), by="scientific_name") %>%
   mutate (taxon="conifers")
 
-
 # how many cities does each species appear in?
 total_cities <- all_wfreq %>%
   group_by (scientific_name) %>%
@@ -184,7 +183,6 @@ total_cities <- all_wfreq %>%
 names <- all_wfreq %>%
   select(scientific_name:common_name) %>%
   unique()
-
 
 # creating a single table with all of the above
 big_everything <- big_birds %>%
@@ -203,10 +201,7 @@ big_over100obs <- big_everything %>%
 write.csv(big_everything, "figures_n_tables/big_everything.csv")
 write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
 
-# Top10 lists for all cities
 
-top10_list <- top10_knit(birds,"birds")
-write.csv(top10_list, "figures_n_tables_top10_list.csv")
 
 # *************************************************************
 # SUMMARY STATS OF INTEREST (Table 5)
@@ -260,4 +255,5 @@ write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
 
 # Top10 lists for all cities
 top10_list <- top10_knit(birds,"birds")
+write.csv(top10_list, "figures_n_tables_top10_list.csv")
 
