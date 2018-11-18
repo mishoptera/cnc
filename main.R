@@ -254,6 +254,6 @@ everything    # Birds and dicots get overrepresented in the top 100, while insec
 write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
 
 # Top10 lists for all cities
-top10_list <- top10_knit(birds,"birds")
-write.csv(top10_list, "figures_n_tables_top10_list.csv")
+
+top10_knit(birds)
 

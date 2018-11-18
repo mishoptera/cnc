@@ -148,6 +148,7 @@ small_table <- function(big_table) {
 }
 
 
+
 # *************************************************************
 # FUNCTIONS TO COMBINE INTO ONE MAIN TABLE
 # *************************************************************
@@ -158,35 +159,43 @@ bigify <- function(cam, arm, i){
 }
 
 
-#
+# *************************************************************
+# ADDITIONAL RELEVANT FUNCTIONS
+# *************************************************************
 # Table for Michelle (top 10 for each city, for each taxon)
-top10 <- function (city, taxa) {
-  taxa %>%
+top10 <- function (city, taxon) {
+  taxon %>%
     filter(hometown == city) %>%
-    group_by(scientific_name) %>%
+    group_by(common_name) %>%
     summarise(count = n()) %>%
     arrange(desc(count)) %>%
     mutate(rank = rank(desc(count), ties.method="random")) %>%
     filter (rank < 11) %>%
-    select (scientific_name) %>% #this line can be deleted if needing more info
-    rename(!!city := scientific_name)
+    select (common_name) %>% #this line can be deleted if needing more info
+    rename(!!city := common_name)
 }
 
-michelle <- function(taxa, taxa_name) {
-  top10("austin", taxa) %>%
-    bind_cols (top10("boston", taxa)) %>%
-    bind_cols (top10("chicago", taxa)) %>%
-    bind_cols (top10("dallas", taxa)) %>%
-    bind_cols (top10("houston", taxa)) %>%
-    bind_cols (top10("losangeles", taxa)) %>%
-    bind_cols (top10("miami", taxa)) %>%
-    bind_cols (top10("minneapolis", taxa)) %>%
-    bind_cols (top10("newyork", taxa)) %>%
-    bind_cols (top10("raleigh", taxa)) %>%
-    bind_cols (top10("saltlakecity", taxa)) %>%
-    bind_cols (top10("sanfrancisco", taxa)) %>%
-    bind_cols (top10("seattle", taxa)) %>%
-    bind_cols (top10("washingtondc", taxa)) %>%
-    mutate (taxa_name = taxa_name) %>%
-    select (taxa_name, everything())
+top10_knit <- function(taxon) {
+  taxa_name <-deparse(substitute(taxon))
+  
+  t10 <- top10("austin", taxon) %>%
+    bind_cols (top10("boston", taxon)) %>%
+    bind_cols (top10("chicago", taxon)) %>%
+    bind_cols (top10("dallas", taxon)) %>%
+    bind_cols (top10("houston", taxon)) %>%
+    bind_cols (top10("losangeles", taxon)) %>%
+    bind_cols (top10("miami", taxon)) %>%
+    bind_cols (top10("minneapolis", taxon)) %>%
+    bind_cols (top10("newyork", taxon)) %>%
+    bind_cols (top10("raleigh", taxon)) %>%
+    bind_cols (top10("saltlakecity", taxon)) %>%
+    bind_cols (top10("sanfrancisco", taxon)) %>%
+    bind_cols (top10("seattle", taxon)) %>%
+    bind_cols (top10("washingtondc", taxon)) %>%
+    mutate (subgroup = taxa_name) %>%
+    select (subgroup, everything())
+  
+  filename <- paste("figures_n_tables/t10_", taxa_name, ".csv", sep = "")
+  write.csv(t10, filename)
 }
+
