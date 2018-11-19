@@ -1,23 +1,3 @@
-library(devtools)
-install_github("hms-dbmi/UpSetR")
-library(UpSetR)
-
-movies <- read.csv(system.file("extdata", "movies.csv", package = "UpSetR"), 
-                   header = T, sep = ";")
-cnc <- read.csv("figures_n_tables/upset_test.csv")
-
-upset(movies, nsets = 6, number.angles = 30, point.size = 3.5, line.size = 2, 
-      mainbar.y.label = "Genre Intersections", sets.x.label = "Movies Per Genre", 
-      text.scale = c(1.3, 1.3, 1, 1, 2, 0.75))
-
-upset(movies, sets = c("Action", "Adventure", "Comedy", "Drama", "Mystery", 
-                       "Thriller", "Romance", "War", "Western"), mb.ratio = c(0.55, 0.45), order.by = "freq")
-
-upset(cnc, sets = c("n", "d1", "d2", "d3", "d4", 
-                       "d5"), mb.ratio = c(0.55, 0.45), order.by = "freq")
-
-
-#?????????????????
 
 # Function to create a matrix of taxa by city/landuse "site".  Analagous to the dune dataset
 cc_matrix <- function(taxon_data) {
@@ -56,10 +36,9 @@ cc_env <- function(taxon_matrix) {
 
 # ////////////////////
 # Community compostion plots and analyses nationwide
-plot_cc_us <- function (all_matrix, all_env, title) {
   # running the NMDS
   all_matrix <- cc_matrix(birds)
-  all_env <- cc_env(all_matrix)
+  cc_all_env <- cc_env(all_matrix)
   mod <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
  
   lc_perm <- adonis(all_matrix ~ all_env$landcover_group, data = all_env, 
@@ -78,8 +57,8 @@ plot_cc_us <- function (all_matrix, all_env, title) {
   species_scores$common_name <- rownames(species_scores)
   species_scores_subset <- species_scores %>%
     left_join(big_everything, by = "common_name") %>%
-    filter(count>=100) %>%
-    select(NMDS1, NMDS2, species)
+    filter(count>=30) %>%
+    select(NMDS1, NMDS2, common_name)
   subtitle <- paste("2-D Stress =", stress)
   cities_mod <- select(cities, c(hometown, lat, lon, region, official_hometown))
   data_scores <- left_join(data_scores, cities_mod, by = "hometown")
@@ -93,12 +72,12 @@ plot_cc_us <- function (all_matrix, all_env, title) {
   data_scores_natural <- data_scores %>% filter(landcover=="natural")
   
   species <- ggplot()+
-    geom_point(data=data_scores,aes(x=NMDS1,y=NMDS2,shape=region, col=urbanization),size=3) + 
+    geom_point(data=data_scores,aes(x=NMDS1,y=NMDS2, shape = region, col=urbanization),size=3) + 
     labs (shape = "Regions", colour = "Urbanization Levels", fill = "Urbanization Levels") +
     labs(title = "Land cover groupings", subtitle = subtitle) +
     stat_chull(data=data_scores, geom = "polygon", alpha = 0.1, aes(x=NMDS1,y=NMDS2,
                                                                     fill=urbanization, color=urbanization)) +
-    geom_text_repel(data=species_scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +
+    geom_text_repel(data=species_scores_subset,aes(x=NMDS1,y=NMDS2,label=common_name)) +
     theme_bw() +
     coord_equal() +
     theme(axis.text.x = element_blank(),  # remove x-axis text
@@ -110,4 +89,5 @@ plot_cc_us <- function (all_matrix, all_env, title) {
           panel.grid.major = element_blank(),  #remove major-grid labels
           panel.grid.minor = element_blank(),  #remove minor-grid labels
           plot.background = element_blank())
-}
+
+ggsave(plot = species, filename = "figures_n_tables/birds.jpg", height = 40, width = 40, units = "cm")
