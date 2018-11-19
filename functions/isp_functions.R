@@ -162,7 +162,7 @@ bigify <- function(cam, arm, i){
 # *************************************************************
 # ADDITIONAL RELEVANT FUNCTIONS
 # *************************************************************
-# Table for Michelle (top 10 for each city, for each taxon)
+# Table for Michelle (top 20 for each city, for plants and animals)
 top10 <- function (city, taxon) {
   taxon %>%
     filter(hometown == city) %>%

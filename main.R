@@ -254,6 +254,7 @@ everything    # Birds and dicots get overrepresented in the top 100, while insec
 write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
 
 # Top10 lists for all cities
+top10_knit(plants)
+top10_knit(animals)
 
-top10_knit(birds)
 
