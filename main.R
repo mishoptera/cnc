@@ -195,12 +195,23 @@ big_everything <- big_birds %>%
 
 # to make it a bit manageable to share in paper as a table
 big_over100obs <- big_everything %>%
-  arrange(desc(count)) %>%
+  arrange(desc()) %>%
   filter(count>=100)
+
+# alternative to make it a bit manageable to share in paper as a table
+big_top10s <- big_everything %>%
+  filter(rank<=10)
+
+big_top20s <- big_everything %>%
+  filter(rank<=20)
+
+big_over4cities <- big_everything %>%
+  filter(num_cities>=4)
 
 write.csv(big_everything, "figures_n_tables/big_everything.csv")
 write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
-
+write.csv(big_top10s, "figures_n_tables/big_top10s.csv")    # Table 4 alternative
+write.csv(big_over4cities, "figures_n_tables/big_over4cities.csv")    # Table 4 alternative
 
 
 # *************************************************************
