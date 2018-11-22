@@ -215,7 +215,7 @@ write.csv(big_over4cities, "figures_n_tables/big_over4cities.csv")    # Table 4 
 
 
 # *************************************************************
-# SUMMARY STATS OF INTEREST (Table 5)
+# EXTRA SUMMARY STATS OF INTEREST (Table 5)
 # *************************************************************
 
 # setting some variables values
@@ -268,4 +268,6 @@ write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
 top10_knit(plants)
 top10_knit(animals)
 
-
+# Creating a community composition figure that shows bird species names
+# Will eventually add here but need to decide which sections I want to include first.
+# for now, just working in a separate file called "coolPlot.R"

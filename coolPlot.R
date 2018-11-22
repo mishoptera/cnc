@@ -1,37 +1,11 @@
 
-# Function to create a matrix of taxa by city/landuse "site".  Analagous to the dune dataset
-cc_matrix <- function(taxon_data) {
-  taxon_matrix <- taxon_data %>%
-    group_by(hometown, nlcd_group2, common_name) %>%
-    summarise(obs = n()) %>%
-    spread(common_name, obs, fill = 0) %>%
-    as.data.frame()
-  
-  rownames(taxon_matrix) <-paste(taxon_matrix$hometown, taxon_matrix$nlcd_group2, sep = ".")
-  taxon_matrix[,1:2] <- NULL
-  
-  return(taxon_matrix)
-}
+# Author: Misha Leong
+# Date: October 2018
+# Project: Exploring urban biodiversity patterns with City Nature Challenge iNaturalist data
+# Specificly: Extra script to create a community composition figure with species names
 
-# Function to create a complementary matrix of environmental variables for the taxa matrix.
-cc_env <- function(taxon_matrix) {
-  cities <- rownames(taxon_matrix)
-  
-  taxon_env <- cities %>%
-    as.data.frame.character() %>%
-    separate(col = 1, into = c("hometown", "landcover_group"), extra = "merge")
-  
-  return(taxon_env)
-}
+source('functions/cc_functions.r')
 
-
-
-
-
-
-# *************************************************************
-# PLOTS
-# *************************************************************
 
 # ////////////////////
 # Bird community compostion plots and for entire US
