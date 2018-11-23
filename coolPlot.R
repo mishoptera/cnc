@@ -1,6 +1,6 @@
 
 # Author: Misha Leong
-# Date: October 2018
+# Date: November 2018
 # Project: Exploring urban biodiversity patterns with City Nature Challenge iNaturalist data
 # Specificly: Extra script to create a community composition figure with species names
 
@@ -64,7 +64,8 @@ ggsave(plot = species, filename = "figures_n_tables/birds.jpg", height = 40, wid
 
 # ////////////////////////////////////////
 # Trying to do birds on a regional scale
-plot_cc_region_species <- function (all_matrix, title) {
+plot_cc_region_species <- function (taxa, title, min_species = 10) {
+  all_matrix <- cc_matrix(taxa)
   all_env <- cc_env(all_matrix)
   mod_all <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
   data_scores <- as.data.frame(scores(mod_all)) 
@@ -75,7 +76,7 @@ plot_cc_region_species <- function (all_matrix, title) {
   species_scores$common_name <- rownames(species_scores)
   species_scores_subset <- species_scores %>%
     left_join(big_everything, by = "common_name") %>%
-    filter(count>=10) %>%
+    filter(count>=min_species) %>%
     select(NMDS1, NMDS2, common_name)
   subtitle <- paste("2-D Stress =", stress)
   cities <- select(cities, c(hometown, lat, lon, region, official_hometown))
@@ -112,12 +113,13 @@ plot_cc_region_species <- function (all_matrix, title) {
           panel.grid.minor = element_blank(),  #remove minor-grid labels
           plot.background = element_blank())
   
-  filename <- paste("figures_n_tables/cc_region_birds_", title, ".jpg", sep = "")
+  filename <- paste("figures_n_tables/cc_region_", title, ".jpg", sep = "")
   ggsave(plot = all, filename = filename, height = 40, width = 40, units = "cm")
   
 }
-cc_texas <- cc_matrix(birds %>% filter(hometown %in% c("houston", "dallas", "austin")))
-plot_cc_region_species(cc_texas, "Texas")
+
+cc_texas <- birds %>% filter(hometown %in% c("houston", "dallas", "austin"))
+plot_cc_region_species(cc_texas, "Texas: birds", min_species = 50)
 
 cc_atlantic <- cc_matrix(birds %>% filter(hometown %in% c("boston", "newyork", "washingtondc")))
 plot_cc_region_species(cc_atlantic, "Atlantic Coast")
