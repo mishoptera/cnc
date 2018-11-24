@@ -121,11 +121,11 @@ plot_cc_region_species <- function (taxa, title, min_species = 10) {
 cc_texas <- birds %>% filter(hometown %in% c("houston", "dallas", "austin"))
 plot_cc_region_species(cc_texas, "Texas: birds", min_species = 50)
 
-cc_atlantic <- cc_matrix(birds %>% filter(hometown %in% c("boston", "newyork", "washingtondc")))
+cc_atlantic <- birds %>% filter(hometown %in% c("boston", "newyork", "washingtondc"))
 plot_cc_region_species(cc_atlantic, "Atlantic Coast")
 
-cc_pacific <- cc_matrix(birds %>% filter(hometown %in% c("sanfrancisco", "losangeles", "seattle")))
+cc_pacific <- birds %>% filter(hometown %in% c("sanfrancisco", "losangeles", "seattle"))
 plot_cc_region_species(cc_pacific, "Pacific Coast")
 
-cc_pacific <- cc_matrix(birds %>% filter(hometown %in% c("sanfrancisco", "losangeles")))
-plot_cc_region_species(cc_pacific, "California")
+cc_california <- birds %>% filter(hometown %in% c("sanfrancisco", "losangeles"))
+plot_cc_region_species(cc_california, "California")
