@@ -110,6 +110,23 @@ plot_cc_region_species(cc_california, "California")
 # *************************************************************
 source('functions/isp_functions.r')
 
+taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
+
+## TRYING TO FIGURE OUT AGAIN WHY THIS WON"T WORK. IT RUNS, BUT THE NEW TABLES AREN"T BEING
+## ASSIGNED IT SEEMS
+
+# create big ranking tables for each taxa
+lapply(taxa_names, function(i){
+  assign(paste0("ranks_", i), create_big_table(get(i)))
+})
+
+# create city aggregation metric tables
+lapply(taxa, function(i){
+  ranks_table <- eval(as.name(paste0("ranks_", i)))
+  assign(paste0("cam_", i), small_table3(ranks_table))
+})
+
+
 # create big ranking tables for each taxa
 ranks_dicots <- create_big_table(dicots)
 ranks_monocots <- create_big_table(monocots)
