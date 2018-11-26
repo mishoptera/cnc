@@ -117,83 +117,29 @@ taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "
 
 # create big ranking tables for each taxa
 lapply(taxa_names, function(i){
-  assign(paste0("ranks_", i), create_big_table(get(i)))
+  assign(paste0("ranks_", i) , create_big_table(get(i)), envir = .GlobalEnv)
 })
 
 # create city aggregation metric tables
 lapply(taxa, function(i){
   ranks_table <- eval(as.name(paste0("ranks_", i)))
-  assign(paste0("cam_", i), small_table3(ranks_table))
+  assign(paste0("cam_", i), small_table3(ranks_table), envir = .GlobalEnv)
 })
 
-
-# create big ranking tables for each taxa
-ranks_dicots <- create_big_table(dicots)
-ranks_monocots <- create_big_table(monocots)
-ranks_ferns <- create_big_table(ferns)
-ranks_conifers <- create_big_table(conifers)
-ranks_birds <- create_big_table(birds)
-ranks_insects <- create_big_table(insects)
-ranks_reptiles <- create_big_table(reptiles)
-ranks_amphibians <- create_big_table(amphibians)
-ranks_mammals <- create_big_table(mammals)
-ranks_gastropods <- create_big_table(gastropods)
-
-# create city aggregation metric tables
-cam_dicots <- small_table3(ranks_dicots)
-cam_monocots <- small_table3(ranks_monocots)
-cam_ferns <- small_table3(ranks_ferns)
-cam_conifers <- small_table3(ranks_conifers)
-cam_birds <- small_table3(ranks_birds)
-cam_mammals <- small_table3(ranks_mammals)
-cam_gastropods <- small_table3(ranks_gastropods)
-cam_insects <- small_table3(ranks_insects)
-cam_reptiles <- small_table3(ranks_reptiles)
-cam_amphibians <- small_table3(ranks_amphibians)
-
 # create averaged ranking metric tables
-arm_dicots <- small_table(ranks_dicots)
-arm_monocots <- small_table(ranks_monocots)
-arm_ferns <- small_table(ranks_ferns)
-arm_conifers <- small_table(ranks_conifers)
-arm_birds <- small_table(ranks_birds)
-arm_mammals <- small_table(ranks_mammals)
-arm_gastropods <- small_table(ranks_gastropods)
-arm_insects <- small_table(ranks_insects)
-arm_reptiles <- small_table(ranks_reptiles)
-arm_amphibians <- small_table(ranks_amphibians)
+lapply(taxa, function(i){
+  ranks_table <- eval(as.name(paste0("ranks_", i)))
+  assign(paste0("arm_", i), small_table(ranks_table), envir = .GlobalEnv)
+})
 
 # one table to bind them all
-big_birds <- cam_birds %>%
-  left_join(select(arm_birds, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="birds")
-big_mammals <- cam_mammals %>%
-  left_join(select(arm_mammals, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="mammals")
-big_reptiles <- cam_reptiles %>%
-  left_join(select(arm_reptiles, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="reptiles")
-big_amphibians <- cam_amphibians %>%
-  left_join(select(arm_amphibians, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="amphibians")
-big_gastropods <- cam_gastropods %>%
-  left_join(select(arm_gastropods, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="gastropods")
-big_insects <- cam_insects %>%
-  left_join(select(arm_insects, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="insects")
-big_dicots <- cam_dicots %>%
-  left_join(select(arm_dicots, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="dicots")
-big_monocots <- cam_monocots %>%
-  left_join(select(arm_monocots, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="monocots")
-big_ferns <- cam_ferns %>%
-  left_join(select(arm_ferns, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="ferns")
-big_conifers <- cam_conifers %>%
-  left_join(select(arm_conifers, -c(count, rank)), by="scientific_name") %>%
-  mutate (taxon="conifers")
+lapply(taxa, function(i){
+  assign((paste0("big_", i)), bigify(eval(as.name(paste0("cam_", i))), 
+                                     eval(as.name(paste0("arm_", i))), i),
+         envir = .GlobalEnv)
+  
+})
+
 
 # how many cities does each species appear in?
 total_cities <- all_wfreq %>%
