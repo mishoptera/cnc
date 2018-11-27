@@ -9,8 +9,69 @@
 # FUNCTIONS TO CREATE A GIANT TABLE OF RANKS FOR EACH TAXA
 # *************************************************************
 
+# Creates a ranked list of the most common species for each city (land cover types lumped together)
+process_city_simple <- function (hometown1, taxa) {
+ 
+  city_rank = paste0(hometown1, "_rank")
+  city_count = paste0(hometown1, "_count")
+  
+  city_taxa <- taxa %>%
+    filter(hometown == hometown1) %>%
+    group_by(scientific_name) %>%
+    summarise(count = n()) %>%
+    arrange(desc(count)) %>%
+    mutate(rank = rank(desc(count), ties.method="random")) %>%
+    rename(!!city_rank := rank) %>%
+    rename(!!city_count := count)
+  
+  return(city_taxa)
+}
+
 # ////////////////////
-# Creates a ranked list of the most common species for each city
+# knit simple city tables together!
+create_big_table_simple <- function(taxa)  {
+  
+  total  <- taxa %>%
+    group_by(scientific_name) %>%
+    summarise(count = n()) %>%
+    arrange(desc(count)) %>%
+    mutate(rank = rank(desc(count), ties.method="random"))
+  
+  Austin  <- process_city_simple("austin", taxa)
+  Boston  <- process_city_simple("boston", taxa)
+  Chicago  <- process_city_simple("chicago", taxa)
+  Dallas  <- process_city_simple('dallas', taxa)
+  Houston  <- process_city_simple('houston', taxa)
+  Los_Angeles  <- process_city_simple('losangeles', taxa)
+  Miami  <- process_city_simple('miami', taxa)
+  Minneapolis  <- process_city_simple('minneapolis', taxa)
+  New_York  <- process_city_simple('newyork', taxa)
+  Raleigh  <- process_city_simple('raleigh', taxa)
+  Salt_Lake_City  <- process_city_simple('saltlakecity', taxa)
+  San_Francisco  <- process_city_simple('sanfrancisco', taxa)
+  Seattle  <- process_city_simple('seattle', taxa)
+  Washington_DC <- process_city_simple('washingtondc', taxa)
+  
+  big_table <- total %>%
+    left_join(Austin, by="scientific_name") %>%
+    left_join(Boston, by="scientific_name") %>%
+    left_join(Chicago, by="scientific_name") %>%
+    full_join(Dallas, by="scientific_name") %>%
+    full_join(Houston, by="scientific_name") %>%
+    full_join(Los_Angeles, by="scientific_name") %>%
+    full_join(Miami, by="scientific_name") %>%
+    full_join(Minneapolis, by="scientific_name") %>%
+    full_join(New_York, by="scientific_name") %>%
+    full_join(Raleigh, by="scientific_name") %>%
+    full_join(Salt_Lake_City, by="scientific_name") %>%
+    full_join(San_Francisco, by="scientific_name") %>%
+    full_join(Seattle, by="scientific_name") %>%
+    full_join(Washington_DC, by="scientific_name")%>%
+    distinct()
+}
+
+# ////////////////////
+# Creates a ranked list of the most common species for each city for each land cover type
 process_city <- function (hometown1, taxa, nlcd) {
   name_rank = paste(if_else (nlcd == "natural", "n", 
                              if_else (nlcd == "developed1_open_space", "d1",  
@@ -29,6 +90,8 @@ process_city <- function (hometown1, taxa, nlcd) {
   
   return(city_taxa)
 }
+
+
 
 # ////////////////////
 # mini table of all the different land use types for each city
