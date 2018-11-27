@@ -112,8 +112,10 @@ source('functions/isp_functions.r')
 
 taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
 
-## TRYING TO FIGURE OUT AGAIN WHY THIS WON"T WORK. IT RUNS, BUT THE NEW TABLES AREN"T BEING
-## ASSIGNED IT SEEMS
+# create simple ranking tables for each taxa (landcover collapsed)
+lapply(taxa_names, function(i){
+  assign(paste0("simple_", i) , create_big_table_simple(get(i), i), envir = .GlobalEnv)
+})
 
 # create big ranking tables for each taxa
 lapply(taxa_names, function(i){
@@ -180,6 +182,27 @@ write.csv(big_everything, "figures_n_tables/big_everything.csv")
 write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
 write.csv(big_top10s, "figures_n_tables/big_top10s.csv")    # Table 4 alternative
 write.csv(big_over4cities, "figures_n_tables/big_over4cities.csv")    # Table 4 alternative
+
+# table for michelle that collapses all land cover types, but pulls out each city
+# creating a single table with all of the above
+big_simple_ranks <- simple_birds %>%
+  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
+  left_join(names, by="scientific_name") %>%
+  left_join(total_cities, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  filter(num_cities>=4) %>%
+  select(taxon, common_name, scientific_name, count, num_cities, contains("rank")) 
+
+big_simple_counts <- simple_birds %>%
+  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
+  left_join(names, by="scientific_name") %>%
+  left_join(total_cities, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  filter(num_cities>=4) %>%
+  select(taxon, common_name, scientific_name, count, num_cities, contains("count")) 
+
+write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")    # Table 4 alternative
+write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_counts.csv")    # Table 4 alternative
 
 
 # *************************************************************

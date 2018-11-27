@@ -29,7 +29,7 @@ process_city_simple <- function (hometown1, taxa) {
 
 # ////////////////////
 # knit simple city tables together!
-create_big_table_simple <- function(taxa)  {
+create_big_table_simple <- function(taxa, i)  {
   
   total  <- taxa %>%
     group_by(scientific_name) %>%
@@ -67,7 +67,8 @@ create_big_table_simple <- function(taxa)  {
     full_join(San_Francisco, by="scientific_name") %>%
     full_join(Seattle, by="scientific_name") %>%
     full_join(Washington_DC, by="scientific_name")%>%
-    distinct()
+    distinct() %>%
+    mutate (taxon=i) 
 }
 
 # ////////////////////
