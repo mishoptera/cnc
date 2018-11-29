@@ -202,12 +202,15 @@ big_simple_counts <- simple_birds %>%
   select(taxon, common_name, scientific_name, count, num_cities, contains("count")) 
 
 write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")    # Table 4 alternative
-write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_counts.csv")    # Table 4 alternative
+write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_coun.csv")    # Table 4 alternative
 
 
 # *************************************************************
 # EXTRA SUMMARY STATS OF INTEREST (Table 5)
 # *************************************************************
+
+# how many observations are there for a species in a given landcover type?
+
 
 # setting some variables values
 totals <- plants %>% 
