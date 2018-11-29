@@ -196,12 +196,22 @@ small_table3 <- function(big_table) {
 # *************************************************************
 # FUNCTIONS FOR AVERAGED RANKING METRIC
 # *************************************************************
+calc_avg <- function(big_table, lc) {
+  big_table <- big_table %>%
+    select(contains(lc)) %>%
+    mutate(total = rowSums(., na.rm = TRUE)) %>%
+    mutate(num_good = rowSums(!is.na(.))-1) %>%
+    mutate(avg_rank = total/num_good)
+  
+  return(big_table$avg_rank)
+}
+
 small_table <- function(big_table) {
-  n.mean <- big_table %>% select(contains("n_")) %>% rowMeans(., na.rm = TRUE)
-  d1.mean <- big_table %>% select(contains("d1_")) %>% rowMeans(., na.rm = TRUE)
-  d2.mean <- big_table %>% select(contains("d2_")) %>% rowMeans(., na.rm = TRUE)
-  d3.mean <- big_table %>% select(contains("d3_")) %>% rowMeans(., na.rm = TRUE)
-  d4.mean <- big_table %>% select(contains("d4_")) %>% rowMeans(., na.rm = TRUE)
+  n.mean <- calc_avg(big_table, "n_")
+  d1.mean <- calc_avg(big_table, "d1_")
+  d2.mean <- calc_avg(big_table, "d2_")
+  d3.mean <- calc_avg(big_table, "d3_")
+  d4.mean <- calc_avg(big_table, "d4_")
   
   temp <- big_table %>% 
     select(scientific_name, count, rank) %>%
