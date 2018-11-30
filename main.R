@@ -209,9 +209,6 @@ write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_coun.csv")
 # EXTRA SUMMARY STATS OF INTEREST (Table 5)
 # *************************************************************
 
-# how many observations are there for a species in a given landcover type?
-
-
 # setting some variables values
 totals <- plants %>% 
   union (animals) %>%
