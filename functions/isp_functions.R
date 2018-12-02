@@ -196,6 +196,19 @@ small_table3 <- function(big_table) {
 # *************************************************************
 # FUNCTIONS FOR AVERAGED RANKING METRIC
 # *************************************************************
+# old way. hmm this also works. it must be something that is happening when the functions are called.
+n.mean <- ranks_birds %>% select(contains("n_")) %>% rowMeans(., na.rm = TRUE)
+n.mean
+
+# Does the same as calc_avg as expected. so why did the old way not work?
+calc_avg_alt <- function(big_table, lc) {
+  big_table <- big_table %>%
+    select(contains(lc)) %>%
+    mutate(avg_rank = rowMeans(., na.rm = TRUE))
+  
+  return(big_table$avg_rank)
+}
+
 calc_avg <- function(big_table, lc) {
   big_table <- big_table %>%
     select(contains(lc)) %>%
