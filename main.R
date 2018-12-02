@@ -123,19 +123,19 @@ lapply(taxa_names, function(i){
 })
 
 # create city aggregation metric tables
-lapply(taxa, function(i){
+lapply(taxa_names, function(i){
   ranks_table <- eval(as.name(paste0("ranks_", i)))
   assign(paste0("cam_", i), small_table3(ranks_table), envir = .GlobalEnv)
 })
 
 # create averaged ranking metric tables
-lapply(taxa, function(i){
+lapply(taxa_names, function(i){
   ranks_table <- eval(as.name(paste0("ranks_", i)))
   assign(paste0("arm_", i), small_table(ranks_table), envir = .GlobalEnv)
 })
 
 # one table to bind them all
-lapply(taxa, function(i){
+lapply(taxa_names, function(i){
   assign((paste0("big_", i)), bigify(eval(as.name(paste0("cam_", i))), 
                                      eval(as.name(paste0("arm_", i))), i),
          envir = .GlobalEnv)
