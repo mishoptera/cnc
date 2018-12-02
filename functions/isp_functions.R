@@ -20,7 +20,7 @@ process_city_simple <- function (hometown1, taxa) {
     group_by(scientific_name) %>%
     summarise(count = n()) %>%
     arrange(desc(count)) %>%
-    mutate(rank = rank(desc(count), ties.method="random")) %>%
+    mutate(rank = rank(desc(count), ties.method="average")) %>%
     rename(!!city_rank := rank) %>%
     rename(!!city_count := count)
   
@@ -35,7 +35,7 @@ create_big_table_simple <- function(taxa, i)  {
     group_by(scientific_name) %>%
     summarise(count = n()) %>%
     arrange(desc(count)) %>%
-    mutate(rank = rank(desc(count), ties.method="random"))
+    mutate(rank = rank(desc(count), ties.method="average"))
   
   Austin  <- process_city_simple("austin", taxa)
   Boston  <- process_city_simple("boston", taxa)
@@ -85,7 +85,7 @@ process_city <- function (hometown1, taxa, nlcd) {
     group_by(scientific_name) %>%
     summarise(count = n()) %>%
     arrange(desc(count)) %>%
-    mutate(rank = rank(desc(count), ties.method="random")) %>%
+    mutate(rank = rank(desc(count), ties.method="average")) %>%
     select(-count) %>%
     rename(!!name_rank := rank)
   
@@ -109,7 +109,7 @@ create_table_hometown <- function(hometown1, taxa)  {
     group_by(scientific_name) %>%
     summarise(count = n()) %>%
     arrange(desc(count)) %>%
-    mutate(rank = rank(desc(count), ties.method="random"))
+    mutate(rank = rank(desc(count), ties.method="average"))
   
   hometown_table <- dummy %>%
     left_join(n, by="scientific_name") %>%
@@ -130,7 +130,7 @@ create_big_table <- function(taxa)  {
     group_by(scientific_name) %>%
     summarise(count = n()) %>%
     arrange(desc(count)) %>%
-    mutate(rank = rank(desc(count), ties.method="random"))
+    mutate(rank = rank(desc(count), ties.method="average"))
   
   Austin  <- create_table_hometown("austin", taxa)
   Boston  <- create_table_hometown("boston", taxa)
