@@ -256,7 +256,7 @@ top10 <- function (city, taxon) {
     group_by(common_name) %>%
     summarise(count = n()) %>%
     arrange(desc(count)) %>%
-    mutate(rank = rank(desc(count), ties.method="random")) %>%
+    mutate(rank = rank(desc(count), ties.method="average")) %>%
     filter (rank < 11) %>%
     select (common_name) %>% #this line can be deleted if needing more info
     rename(!!city := common_name)
