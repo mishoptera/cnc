@@ -63,7 +63,7 @@ ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
 
 
 # *************************************************************
-# COMMUNITY COMPOSITION (Figure 2, Figure 3, Table 2, Table 3)
+# COMMUNITY COMPOSITION (Figures 2-5, Tables 2 & 3)
 # *************************************************************
 source('functions/cc_functions.r')
 
@@ -100,10 +100,8 @@ tab <- bind_rows(tab_all, tab_plants, tab_animals)
 write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 3
 
 # Creating a community composition figure that shows bird species names
-# Will eventually add here but need to decide which sections I want to include first.
-# for now, just working in a separate file called "coolPlot.R"
 cc_california <- birds %>% filter(hometown %in% c("sanfrancisco", "losangeles"))
-plot_cc_region_species(cc_california, "California")
+plot_cc_region_species(cc_california, "California")               # Figure 5
 
 # *************************************************************
 # INDIVIDUAL SPECIES PATTERNS (Table 4)
@@ -259,8 +257,4 @@ write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
 top10_knit(plants)
 top10_knit(animals)
 
-# Creating a community composition figure that shows bird species names
-# Will eventually add here but need to decide which sections I want to include first.
-# for now, just working in a separate file called "coolPlot.R"
-cc_california <- cc_matrix(birds %>% filter(hometown %in% c("sanfrancisco", "losangeles")))
-plot_cc_region_species(cc_pacific, "California")
+
