@@ -104,7 +104,7 @@ cc_california <- birds %>% filter(hometown %in% c("sanfrancisco", "losangeles"))
 plot_cc_region_species(cc_california, "California")               # Figure 5
 
 # *************************************************************
-# INDIVIDUAL SPECIES PATTERNS (Table 4)
+# INDIVIDUAL SPECIES PATTERNS BY LAND COVER (Table 4)
 # *************************************************************
 source('functions/isp_functions.r')
 
@@ -141,12 +141,6 @@ lapply(taxa_names, function(i){
 })
 
 
-# how many cities does each species appear in?
-total_cities <- all_wfreq %>%
-  group_by (scientific_name) %>%
-  summarise (num_cities = n_distinct(hometown)) %>%
-  select(scientific_name, num_cities)
-
 # to be able to add common names to table
 names <- all_wfreq %>%
   select(scientific_name:common_name) %>%
@@ -166,13 +160,9 @@ big_over100obs <- big_everything %>%
   arrange(desc()) %>%
   filter(count>=100)
 
-# alternative to make it a bit manageable to share in paper as a table
+# alternatives to make it a bit manageable to share in paper as a table
 big_top10s <- big_everything %>%
   filter(rank<=10)
-
-big_top20s <- big_everything %>%
-  filter(rank<=20)
-
 big_over4cities <- big_everything %>%
   filter(num_cities>=4)
 
@@ -181,8 +171,17 @@ write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
 write.csv(big_top10s, "figures_n_tables/big_top10s.csv")    # Table 4 alternative
 write.csv(big_over4cities, "figures_n_tables/big_over4cities.csv")    # Table 4 alternative
 
-# table for michelle that collapses all land cover types, but pulls out each city
-# creating a single table with all of the above
+# *************************************************************
+# INDIVIDUAL SPECIES PATTERNS BY CITIES
+# *************************************************************
+
+# how many cities does each species appear in?
+total_cities <- all_wfreq %>%
+  group_by (scientific_name) %>%
+  summarise (num_cities = n_distinct(hometown)) %>%
+  select(scientific_name, num_cities)
+
+# table that collapses all land cover types, but pulls out each city
 big_simple_ranks <- simple_birds %>%
   bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
   left_join(names, by="scientific_name") %>%
@@ -207,7 +206,7 @@ write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_coun.csv")
 # EXTRA SUMMARY STATS OF INTEREST (Table 5)
 # *************************************************************
 
-# setting some variables values
+# pulling out total species richness and observation counts for later usage
 totals <- plants %>% 
   union (animals) %>%
   summarise (num_species = n_distinct (scientific_name),
@@ -215,6 +214,7 @@ totals <- plants %>%
 total_species <- totals$num_species
 total_obs <- totals$num_obs
 
+# a filtered down subset of the above total
 subsets <- plants %>% 
   union (animals) %>%
   group_by(scientific_name)%>%
@@ -226,7 +226,9 @@ subsets <- plants %>%
 subset_species <- subsets$num_species
 subset_obs <- subsets$num_obs
 
-
+# creating a table of the 10 taxon classes that looks at how frequently
+# species from these groups have at least 100 observations.  For example,
+# birds are over represented in this frequently observed group compared to insects
 over100 <- plants %>%
   union (animals) %>%
   group_by(scientific_name)%>%
