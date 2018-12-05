@@ -172,24 +172,25 @@ process_city_core <- function(hometown1, taxa)  {
     gather("lc", "rank", 2:3) %>%
     filter(rank<50)
   
-  urban_sp <- d1 %>%
-    full_join(d2, by="scientific_name") %>%
+  urban_sp <- d2 %>%
     full_join(d3, by="scientific_name") %>%
     full_join(d4, by="scientific_name") %>%
-    gather("lc", "rank", 2:5) %>%
+    gather("lc", "rank", 2:4) %>%
     filter(rank<50)
   
   only_natural_sp <- natural_sp %>%
     anti_join(urban_sp, by="scientific_name") %>%
-    left_join(names, by="scientific_name") %>%
+    full_join(names, by="scientific_name") %>%
     distinct(scientific_name, .keep_all = TRUE) %>%
     select(common_name, everything())
   
   only_urban_sp <- urban_sp %>%
     anti_join(natural_sp, by="scientific_name") %>%
-    left_join(names, by="scientific_name") %>%
+    full_join(names, by="scientific_name") %>%
     distinct(scientific_name, .keep_all = TRUE) %>%  # fixes problem of multiple common names
     select(common_name, everything())
+  
+  return(only_urban_sp)
 }
 
 Austin  <- process_city_core("austin", taxa)
@@ -206,6 +207,18 @@ Salt_Lake_City  <- process_city_core('saltlakecity', taxa)
 San_Francisco  <- process_city_core('sanfrancisco', taxa)
 Seattle  <- process_city_core('seattle', taxa)
 Washington_DC <- process_city_core('washingtondc', taxa)
+
+all_urban <- Austin %>%
+  bind_rows(Boston, Chicago, Dallas, Houston, Los_Angeles, Miami, Minneapolis,
+            New_York, Raleigh, Salt_Lake_City, San_Francisco, Seattle, Washington_DC) %>%
+  group_by(scientific_name) %>%
+  summarise(num_cities = n()) %>%
+  arrange(desc(num_cities)) %>%
+  full_join(names, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  select(common_name, everything()) %>%
+  filter(num_cities > 3)
+all_urban
 
 
 
