@@ -218,7 +218,7 @@ all_urban <- Austin %>%
   left_join(names, by="scientific_name") %>%
   distinct(scientific_name, .keep_all = TRUE) %>%
   select(common_name, everything()) %>%
-  filter(num_cities > 2)
+  filter(num_cities > 4)
 all_urban
 
 
