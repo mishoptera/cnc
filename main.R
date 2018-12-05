@@ -146,14 +146,41 @@ names <- all_wfreq %>%
   select(scientific_name:common_name) %>%
   unique()
 
+# how many cities does each species appear in?
+total_cities <- all_wfreq %>%
+  group_by (scientific_name) %>%
+  summarise (num_cities = n_distinct(hometown)) %>%
+  select(scientific_name, num_cities)
+
 # creating a single table with all of the above
 big_everything <- big_birds %>%
   bind_rows(big_mammals, big_reptiles, big_amphibians, big_gastropods, big_insects, big_dicots, big_monocots, big_ferns, big_conifers) %>%
   left_join(names, by="scientific_name") %>%
   left_join(total_cities, by="scientific_name") %>%
   distinct(scientific_name, .keep_all = TRUE) %>%
-  select(common_name, everything()) %>%
-  select(taxon, everything())
+  mutate (diff_cam = (n+d1)-(d3+d4)) %>%
+  mutate (diff_arm = (d3.mean+d4.mean)-(n.mean+d1.mean)) %>%
+  select(taxon, common_name, scientific_name, count, num_cities, 
+         diff_cam, diff_arm, everything())
+ 
+
+# subset of big everything that pulls out urban specialists
+big_urban_arm <- big_everything %>%
+  arrange(diff_arm, diff_cam) %>%
+  filter(count>=50) %>%
+  filter(taxon != "dicots") %>%
+  filter(diff_arm < -10)
+
+big_urban_cam <- big_everything %>%
+  arrange(diff_cam, diff_arm) %>%
+  filter(count>=50) %>%
+  filter(taxon != "dicots") %>%
+  filter(diff_cam < 0)
+
+big_natural <-  big_everything %>%
+  arrange(desc(diff_cam, diff_arm))  %>%
+  filter(count>=50) %>%
+  filter(diff_cam > 6)
 
 # to make it a bit manageable to share in paper as a table
 big_over100obs <- big_everything %>%
