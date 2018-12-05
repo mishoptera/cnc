@@ -124,3 +124,88 @@ bdnc
 # *************************************************************
 # LIST COMPARISON BETWEEN UBIQUITOUS AND UNIQUE
 # *************************************************************
+# 1. create a rank of the top 100 observed species for each land cover type for each city
+# 2. Which species are found in all land cover types?
+# 3. Which species are only found in d1-d4?
+# 4. Which species are only found in d0-d1?
+
+## here we go!
+process_city_list <- function (hometown1, taxa, nlcd) {
+  name_rank = paste(if_else (nlcd == "natural", "n", 
+                             if_else (nlcd == "developed1_open_space", "d1",  
+                                      if_else (nlcd == "developed2_low_intensity", "d2", 
+                                               if_else (nlcd == "developed3_medium_intensity", "d3","d4")))), hometown1, sep = "_")
+  
+  
+  city_taxa <- taxa %>%
+    filter(hometown == hometown1) %>%
+    filter(nlcd_group2 == nlcd) %>%
+    group_by(scientific_name) %>%
+    summarise(count = n()) %>%
+    arrange(desc(count)) %>%
+    mutate(rank = rank(desc(count), ties.method="average")) %>%
+    select(-count) %>%
+    rename(!!name_rank := rank)
+  return(city_taxa)
+}
+
+names <- all_wfreq %>%
+  select(scientific_name:common_name) %>%
+  unique()
+
+process_city_core <- function(hometown1, taxa)  {
+  n <- process_city_list(hometown1, taxa, "natural")
+  d1 <- process_city_list(hometown1, taxa, "developed1_open_space")
+  d2 <- process_city_list(hometown1, taxa, "developed2_low_intensity")
+  d3 <- process_city_list(hometown1, taxa, "developed3_medium_intensity")
+  d4 <- process_city_list(hometown1, taxa, "developed4_high_intensity")
+  
+  everywhere <- n %>%
+    inner_join(d1, by="scientific_name") %>%
+    inner_join(d2, by="scientific_name") %>%
+    inner_join(d3, by="scientific_name") %>%
+    inner_join(d4, by="scientific_name")
+  everywhere
+  
+  natural_sp <- n %>%
+    full_join(d1, by="scientific_name") %>%
+    gather("lc", "rank", 2:3) %>%
+    filter(rank<50)
+  
+  urban_sp <- d1 %>%
+    full_join(d2, by="scientific_name") %>%
+    full_join(d3, by="scientific_name") %>%
+    full_join(d4, by="scientific_name") %>%
+    gather("lc", "rank", 2:5) %>%
+    filter(rank<50)
+  
+  only_natural_sp <- natural_sp %>%
+    anti_join(urban_sp, by="scientific_name") %>%
+    left_join(names, by="scientific_name") %>%
+    distinct(scientific_name, .keep_all = TRUE) %>%
+    select(common_name, everything())
+  
+  only_urban_sp <- urban_sp %>%
+    anti_join(natural_sp, by="scientific_name") %>%
+    left_join(names, by="scientific_name") %>%
+    distinct(scientific_name, .keep_all = TRUE) %>%  # fixes problem of multiple common names
+    select(common_name, everything())
+}
+
+Austin  <- process_city_core("austin", taxa)
+Boston  <- process_city_core("boston", taxa)
+Chicago  <- process_city_core("chicago", taxa)
+Dallas  <- process_city_core('dallas', taxa)
+Houston  <- process_city_core('houston', taxa)
+Los_Angeles  <- process_city_core('losangeles', taxa)
+Miami  <- process_city_core('miami', taxa)
+Minneapolis  <- process_city_core('minneapolis', taxa)
+New_York  <- process_city_core('newyork', taxa)
+Raleigh  <- process_city_core('raleigh', taxa)
+Salt_Lake_City  <- process_city_core('saltlakecity', taxa)
+San_Francisco  <- process_city_core('sanfrancisco', taxa)
+Seattle  <- process_city_core('seattle', taxa)
+Washington_DC <- process_city_core('washingtondc', taxa)
+
+
+
