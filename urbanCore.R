@@ -170,25 +170,26 @@ process_city_core <- function(hometown1, taxa)  {
   natural_sp <- n %>%
     full_join(d1, by="scientific_name") %>%
     gather("lc", "rank", 2:3) %>%
-    filter(rank<50)
+    filter(rank<=100)
   
   urban_sp <- d2 %>%
     full_join(d3, by="scientific_name") %>%
     full_join(d4, by="scientific_name") %>%
     gather("lc", "rank", 2:4) %>%
-    filter(rank<50)
+    filter(rank<=100)
   
   only_natural_sp <- natural_sp %>%
     anti_join(urban_sp, by="scientific_name") %>%
-    full_join(names, by="scientific_name") %>%
+    left_join(names, by="scientific_name") %>%
     distinct(scientific_name, .keep_all = TRUE) %>%
     select(common_name, everything())
   
   only_urban_sp <- urban_sp %>%
     anti_join(natural_sp, by="scientific_name") %>%
-    full_join(names, by="scientific_name") %>%
+    left_join(names, by="scientific_name") %>%
     distinct(scientific_name, .keep_all = TRUE) %>%  # fixes problem of multiple common names
-    select(common_name, everything())
+    select(common_name, everything()) %>%
+    arrange(rank)
   
   return(only_urban_sp)
 }
@@ -214,10 +215,10 @@ all_urban <- Austin %>%
   group_by(scientific_name) %>%
   summarise(num_cities = n()) %>%
   arrange(desc(num_cities)) %>%
-  full_join(names, by="scientific_name") %>%
+  left_join(names, by="scientific_name") %>%
   distinct(scientific_name, .keep_all = TRUE) %>%
   select(common_name, everything()) %>%
-  filter(num_cities > 3)
+  filter(num_cities > 2)
 all_urban
 
 
