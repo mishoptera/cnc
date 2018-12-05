@@ -169,13 +169,30 @@ big_urban_arm <- big_everything %>%
   arrange(diff_arm, diff_cam) %>%
   filter(count>=50) %>%
   filter(taxon != "dicots") %>%
-  filter(diff_arm < -10)
+  filter(diff_arm < -10)%>%
+  rename(d0.mean = n.mean) %>%
+  gather("lc_arm", "arm", d0.mean:d4.mean)
+
+bua <- ggplot(data=big_urban_arm,aes(x=lc_arm,y=arm, colour=taxon, group=common_name))+
+  geom_point() + 
+  geom_line () +
+  theme_bw() +
+  scale_y_reverse( lim=c(50,0))
+
 
 big_urban_cam <- big_everything %>%
   arrange(diff_cam, diff_arm) %>%
   filter(count>=50) %>%
   filter(taxon != "dicots") %>%
-  filter(diff_cam < 0)
+  filter(diff_cam < -1) %>%
+  rename(d0 = n) %>%
+  gather("lc_cam", "cam", d0:d4)
+buc <- ggplot(data=big_urban_cam,aes(x=lc_cam,y=cam, colour=taxon, group=common_name))+
+  geom_point() + 
+  geom_line () +
+  theme_bw()
+
+
 
 big_natural <-  big_everything %>%
   arrange(desc(diff_cam, diff_arm))  %>%
