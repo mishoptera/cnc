@@ -3,6 +3,72 @@
 # Project: Exploring urban biodiversity patterns with City Nature Challenge iNaturalist data
 # Specificly: Work in progress to better pull out who urban specialists are
 
+# *************************************************************
+# BIOTIC HOMOGENIZATION ACROSS CITIES
+# *************************************************************
+# Widespread speicies
+# 1. which species are found in 8 or more cities?
+# 2. What proportion of total species and observations do these make up?
+# 3. Which taxa are these based in?
+# pulling out total species richness and observation counts for later usage
+totals <- plants %>% 
+  union (animals) %>%
+  summarise (num_species = n_distinct (scientific_name),
+             num_obs = n())
+total_species <- totals$num_species
+total_obs <- totals$num_obs
+
+names <- all_wfreq %>%
+  select(scientific_name:common_name) %>%
+  unique()
+
+numberCities <-dicots %>% 
+  union (monocots) %>%
+  union (ferns) %>%
+  union (conifers) %>%
+  union (birds) %>%
+  union (insects) %>%
+  union (reptiles) %>%
+  union (amphibians) %>%
+  union (mammals) %>%
+  union (gastropods) %>%
+  group_by (taxon, scientific_name) %>%
+  summarise (num_cities = n_distinct(hometown)) %>%
+  left_join(names, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  select(taxon, common_name, scientific_name, num_cities) %>%
+  #filter(num_cities > 7) %>%
+  arrange(desc(num_cities))
+
+over8 <- numberCities %>%
+  filter(num_cities > 7) 
+
+numberCities_plot <- ggplot(data=numberCities, aes(num_cities, fill = taxon, colour = taxon)) +
+  stat_count(width=0.9) +
+  theme(panel.background = element_blank(), 
+        panel.grid.major = element_blank(),  #remove major-grid labels
+        panel.grid.minor = element_blank())  #remove minor-grid labels
+numberCities_plot
+  
+over8_plot <- ggplot(data=over8, aes(num_cities, fill = taxon, colour = taxon)) +
+  stat_count(width=0.9) +
+  theme(legend.position="none",
+        panel.background = element_blank(), 
+        panel.grid.major = element_blank(),  #remove major-grid labels
+        panel.grid.minor = element_blank())  #remove minor-grid labels)
+  
+over8_plot
+  
+# Insert xbp_grob inside the scatter plot
+over8_grob <- ggplotGrob(over8_plot)
+numberCities_plot + annotation_custom(grob = over8_grob, xmin = 5, xmax = 14, 
+                       ymin = 700, ymax = 2500)
+
+
+# 
+# Top 10 rankings
+# 1. create a taxa list for each city top 10.
+# 2. How many taxa are unique to just one city versus found in over 8?
 
 # *************************************************************
 # FIGURES ILLUSTRATING THE CAM AND ARM METRICS
@@ -12,10 +78,10 @@ big_urban_arm <- big_everything %>%
   arrange(diff_arm, diff_cam) %>%
   filter(count>=50) %>%
   filter(taxon != "dicots") %>%
-  filter(diff_arm < -5)%>%
+  filter(diff_arm < -20)%>%
   rename(d0.mean = n.mean) %>%
   gather("lc_arm", "arm", d0.mean:d4.mean)
-bua <- ggplot(data=big_urban_arm,aes(x=lc_arm,y=arm, colour=taxon, group=common_name))+
+bua <- ggplot(data=big_urban_arm,aes(x=lc_arm,y=arm, colour=common_name, group=common_name))+
   geom_point() + 
   geom_line () +
   theme_bw() +
@@ -26,7 +92,7 @@ big_natural_arm <-  big_everything %>%
   arrange(desc(diff_cam, diff_arm))  %>%
   filter(count>=50) %>%
   filter(taxon != "dicots") %>%
-  filter(diff_arm > 2)%>%
+  filter(diff_arm > 10)%>%
   rename(d0.mean = n.mean) %>%
   gather("lc_arm", "arm", d0.mean:d4.mean)
 bna <- ggplot(data=big_natural_arm,aes(x=lc_arm,y=arm, colour=taxon, group=common_name))+
@@ -164,8 +230,20 @@ process_city_core <- function(hometown1, taxa)  {
     inner_join(d1, by="scientific_name") %>%
     inner_join(d2, by="scientific_name") %>%
     inner_join(d3, by="scientific_name") %>%
-    inner_join(d4, by="scientific_name")
+    inner_join(d4, by="scientific_name")%>%
+    left_join(names, by="scientific_name") %>%
+    distinct(scientific_name, .keep_all = TRUE) %>%
+    select(common_name, everything())
   everywhere
+  
+  everywhere_butn <- d1 %>%
+    inner_join(d2, by="scientific_name") %>%
+    inner_join(d3, by="scientific_name") %>%
+    inner_join(d4, by="scientific_name")%>%
+    left_join(names, by="scientific_name") %>%
+    distinct(scientific_name, .keep_all = TRUE) %>%
+    select(common_name, everything())
+  everywhere_butn
   
   natural_sp <- n %>%
     full_join(d1, by="scientific_name") %>%
