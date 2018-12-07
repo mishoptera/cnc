@@ -22,6 +22,24 @@ names <- all_wfreq %>%
   select(scientific_name:common_name) %>%
   unique()
 
+over8_obs <-dicots %>% 
+  union (monocots) %>%
+  union (ferns) %>%
+  union (conifers) %>%
+  union (birds) %>%
+  union (insects) %>%
+  union (reptiles) %>%
+  union (amphibians) %>%
+  union (mammals) %>%
+  union (gastropods) %>%
+  group_by (scientific_name) %>%
+  mutate (num_cities = n_distinct(hometown)) %>%
+  filter(num_cities > 7) %>%
+  summarise(num_obs = n())%>%
+  arrange(desc(num_obs)) %>%
+over8_obs
+total_over8obs <- sum(over8_obs$num_obs)
+
 numberCities <-dicots %>% 
   union (monocots) %>%
   union (ferns) %>%
