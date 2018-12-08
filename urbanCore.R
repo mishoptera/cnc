@@ -87,6 +87,12 @@ numberCities_plot + annotation_custom(grob = over8_grob, xmin = 5, xmax = 14,
 # Top 10 rankings
 # 1. create a taxa list for each city top 10.
 # 2. How many taxa are unique to just one city versus found in over 8?
+# okay I already have #1 done with create_big_table_simple function.
+# the trick for me is to figure out which species that have a ranking of over 20
+# are also found on the top 20 lists for other cities.
+
+
+
 
 # *************************************************************
 # FIGURES ILLUSTRATING THE CAM AND ARM METRICS
