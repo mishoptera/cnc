@@ -91,7 +91,20 @@ numberCities_plot + annotation_custom(grob = over8_grob, xmin = 5, xmax = 14,
 # the trick for me is to figure out which species that have a ranking of over 20
 # are also found on the top 20 lists for other cities.
 
-
+# already have and can work with a version of big_simple_ranks!
+big_simple_ranks2 <- simple_birds %>%
+  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
+  left_join(names, by="scientific_name") %>%
+  left_join(total_cities, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  select(taxon, common_name, scientific_name, rank, num_cities, contains("rank")) %>%
+  rename(overall_rank = rank) %>%
+  gather("city", "city_rank", austin_rank:washingtondc_rank) %>%
+  filter(city_rank <= 10) %>%
+  group_by(taxon, common_name, scientific_name) %>%
+  summarise (top10_count = n())
+big_simple_ranks2
+  
 
 
 # *************************************************************
