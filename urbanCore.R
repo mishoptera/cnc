@@ -102,10 +102,10 @@ big_simple_ranks2 <- simple_birds %>%
   gather("city", "city_rank", austin_rank:washingtondc_rank) %>%
   filter(city_rank <= 10) %>%
   group_by(taxon, common_name, scientific_name) %>%
-  summarise (top10_count = n())
+  summarise (top10_count = n()) %>%
+  arrange(desc(top10_count))
 big_simple_ranks2
   
-
 
 # *************************************************************
 # FIGURES ILLUSTRATING THE CAM AND ARM METRICS
