@@ -36,7 +36,7 @@ over8_obs <-dicots %>%
   mutate (num_cities = n_distinct(hometown)) %>%
   filter(num_cities > 7) %>%
   summarise(num_obs = n())%>%
-  arrange(desc(num_obs)) %>%
+  arrange(desc(num_obs))
 over8_obs
 total_over8obs <- sum(over8_obs$num_obs)
 
@@ -55,11 +55,29 @@ numberCities <-dicots %>%
   left_join(names, by="scientific_name") %>%
   distinct(scientific_name, .keep_all = TRUE) %>%
   select(taxon, common_name, scientific_name, num_cities) %>%
-  #filter(num_cities > 7) %>%
   arrange(desc(num_cities))
 
 over8 <- numberCities %>%
-  filter(num_cities > 7) 
+  filter(num_cities > 7) %>%
+  left_join(over8_obs, by = "scientific_name")
+over8
+write.csv(over8, "figures_n_tables/over8.csv")
+
+# a function to calculate the slope of the n:d4 points!
+get_slope <- function(n, d1, d2, d3, d4) { 
+  x <- c(1:5)
+  y <- c(n, d1, d2, d3, d4)
+  slope_result <- lm(y~x, na.action=na.exclude)$coeff[[2]]
+  return(slope_result)
+  }
+test <- big_everything %>%
+  rowwise() %>%
+  mutate(slope_cam = get_slope(n,d1, d2, d3, d4)) %>%
+  mutate(slope_arm = get_slope(n.mean, d1.mean, d2.mean, d3.mean, d4.mean))
+
+
+
+
 
 numberCities_plot <- ggplot(data=numberCities, aes(num_cities, fill = taxon, colour = taxon)) +
   stat_count(width=0.9) +
