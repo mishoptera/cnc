@@ -78,21 +78,33 @@ test <- big_over100obs %>%
 
 test_labels_cam <- test %>%
   filter(slope_cam >0) %>%
-  filter(num_cities>4)
+  filter(num_cities>7)
+
+test_labels_cam2 <- test %>%
+  filter(slope_cam < -1) %>%
+  filter(num_cities>7)
 
 test_labels_arm <- test %>%
-  filter(slope_arm < -5) %>%
-  filter(num_cities>4)
+  filter(slope_arm < -2) %>%
+  filter(num_cities>7)
 
-test_plot_cam <- ggplot(data=test ,aes(x=num_cities,y=slope_cam, colour=taxon))+
+test_labels_arm2 <- test %>%
+  filter(slope_arm > 0 ) %>%
+  filter(num_cities>7)
+
+test_plot_cam <- ggplot(data=test %>%filter(taxon!="dicots"),aes(x=num_cities,y=slope_cam, colour=taxon))+
   geom_point() + 
-  geom_text_repel(data = test_labels_cam, aes(x=num_cities, y=slope_cam, label = common_name)) + 
+  labs(title = "Biotic homogenization evaluated with City Aggregation Metric", x = "number of cities", y = "slope of CAM") +
+  geom_text_repel(data = test_labels_cam%>%filter(taxon!="dicots"), aes(x=num_cities, y=slope_cam, label = common_name)) + 
+  geom_text_repel(data = test_labels_cam2%>%filter(taxon!="dicots"), aes(x=num_cities, y=slope_cam, label = common_name)) + 
   theme_bw() 
 test_plot_cam
 
-test_plot_arm <- ggplot(data=test %>%filter(taxon!="dicots"),aes(x=num_cities,y=slope_arm, colour=taxon))+
+test_plot_arm <- ggplot(data=test%>%filter(taxon!="dicots") ,aes(x=num_cities,y=slope_arm, colour=taxon))+
   geom_point() + 
   geom_text_repel(data = test_labels_arm%>%filter(taxon!="dicots"), aes(x=num_cities, y=slope_arm, label = common_name)) + 
+  geom_text_repel(data = test_labels_arm2%>%filter(taxon!="dicots"), aes(x=num_cities, y=slope_arm, label = common_name)) + 
+  labs(title = "Biotic homogenization evaluated with Averaged Ranking Metric", x = "number of cities", y = "slope of ARM") +
   theme_bw()+
   scale_y_reverse(lim=c(8, -8))
 test_plot_arm
