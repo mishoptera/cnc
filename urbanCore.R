@@ -70,13 +70,43 @@ get_slope <- function(n, d1, d2, d3, d4) {
   slope_result <- lm(y~x, na.action=na.exclude)$coeff[[2]]
   return(slope_result)
   }
-test <- big_everything %>%
-  rowwise() %>%
+test <- big_over100obs %>%
+  rowwise() %>%  #this is such an important thing!!!
   mutate(slope_cam = get_slope(n,d1, d2, d3, d4)) %>%
-  mutate(slope_arm = get_slope(n.mean, d1.mean, d2.mean, d3.mean, d4.mean))
+  mutate(slope_arm = get_slope(n.mean,d1.mean, d2.mean, d3.mean, d4.mean)) %>%
+  ungroup() 
 
+test_labels_cam <- test %>%
+  filter(slope_cam >0) %>%
+  filter(num_cities>4)
 
+test_labels_arm <- test %>%
+  filter(slope_arm < -5) %>%
+  filter(num_cities>4)
 
+test_plot_cam <- ggplot(data=test ,aes(x=num_cities,y=slope_cam, colour=taxon))+
+  geom_point() + 
+  geom_text_repel(data = test_labels_cam, aes(x=num_cities, y=slope_cam, label = common_name)) + 
+  theme_bw() 
+test_plot_cam
+
+test_plot_arm <- ggplot(data=test %>%filter(taxon!="dicots"),aes(x=num_cities,y=slope_arm, colour=taxon))+
+  geom_point() + 
+  geom_text_repel(data = test_labels_arm%>%filter(taxon!="dicots"), aes(x=num_cities, y=slope_arm, label = common_name)) + 
+  theme_bw()+
+  scale_y_reverse(lim=c(8, -8))
+test_plot_arm
+
+test_plot_armD <- ggplot(data=test %>%filter(taxon=="dicots"),aes(x=num_cities,y=slope_arm, colour=taxon))+
+  geom_point() + 
+  geom_text_repel(data = test_labels_arm%>%filter(taxon=="dicots"), aes(x=num_cities, y=slope_arm, label = common_name)) + 
+  theme_bw()+
+  scale_y_reverse()
+test_plot_armD
+
+  
+mean(test$slope_cam)
+mean(over8_wslopes$slope_cam)
 
 
 numberCities_plot <- ggplot(data=numberCities, aes(num_cities, fill = taxon, colour = taxon)) +
