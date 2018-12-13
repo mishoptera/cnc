@@ -30,7 +30,7 @@ all_inat <- all_wfreq %>%
         if_else (taxon_class_name == "Polypodiopsida", "ferns", 
         if_else (taxon_class_name == "Pinopsida", "conifers",
         if_else (taxon_class_name == "Aves", "birds",
-        if_else (taxon_class_name == "Insecta", "insectss",
+        if_else (taxon_class_name == "Insecta", "insects",
         if_else (taxon_class_name == "Reptilia", "reptiles",
         if_else (taxon_class_name == "Amphibia", "amphibians",
         if_else (taxon_class_name == "Gastropoda", "gastropods",
