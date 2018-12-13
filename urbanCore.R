@@ -92,22 +92,28 @@ test_labels_arm2 <- test %>%
   filter(slope_arm > 0 ) %>%
   filter(num_cities>7)
 
-test_plot_cam <- ggplot(data=test %>%filter(taxon!="dicots"),aes(x=num_cities,y=slope_cam, colour=taxon))+
+plot_cam <- ggplot(data=test,aes(x=num_cities,y=slope_cam, colour=taxon))+
   geom_point() + 
-  labs(title = "Biotic homogenization evaluated with City Aggregation Metric", x = "number of cities", y = "slope of CAM") +
-  geom_text_repel(data = test_labels_cam%>%filter(taxon!="dicots"), aes(x=num_cities, y=slope_cam, label = common_name)) + 
-  geom_text_repel(data = test_labels_cam2%>%filter(taxon!="dicots"), aes(x=num_cities, y=slope_cam, label = common_name)) + 
+  labs(title = "evaluated with City Aggregation Metric", x = "number of cities", y = "slope of CAM") +
+  geom_text_repel(data = test_labels_cam, aes(x=num_cities, y=slope_cam, label = common_name)) + 
+  geom_text_repel(data = test_labels_cam2, aes(x=num_cities, y=slope_cam, label = common_name)) + 
   theme_bw() 
-test_plot_cam
+plot_cam
 
-test_plot_arm <- ggplot(data=test%>%filter(taxon!="dicots") ,aes(x=num_cities,y=slope_arm, colour=taxon))+
+plot_arm <- ggplot(data=test,aes(x=num_cities,y=slope_arm, colour=taxon))+
   geom_point() + 
-  geom_text_repel(data = test_labels_arm%>%filter(taxon!="dicots"), aes(x=num_cities, y=slope_arm, label = common_name)) + 
-  geom_text_repel(data = test_labels_arm2%>%filter(taxon!="dicots"), aes(x=num_cities, y=slope_arm, label = common_name)) + 
-  labs(title = "Biotic homogenization evaluated with Averaged Ranking Metric", x = "number of cities", y = "slope of ARM") +
+  geom_text_repel(data = test_labels_arm, aes(x=num_cities, y=slope_arm, label = common_name)) + 
+  geom_text_repel(data = test_labels_arm2, aes(x=num_cities, y=slope_arm, label = common_name)) + 
+  labs(title = "evaluated with Averaged Ranking Metric", x = "number of cities", y = "slope of ARM") +
   theme_bw()+
   scale_y_reverse(lim=c(8, -8))
-test_plot_arm
+plot_arm
+
+# Combine into one lovely figure and save
+plots <- ggarrange(plot_cam, plot_arm, labels = c("A", "B"), ncol = 1, nrow = 2)
+plots <- annotate_figure(plots,
+                         top = text_grob("Biotic homogenization with urbanization intensity", face = "bold", size = 18))
+ggsave(plot = plots, filename = "figures_n_tables/bh_CAM_ARM.jpg", height = 24, width = 20, units = "cm")
 
 test_plot_armD <- ggplot(data=test %>%filter(taxon=="dicots"),aes(x=num_cities,y=slope_arm, colour=taxon))+
   geom_point() + 
