@@ -11,27 +11,17 @@
 # 2. What proportion of total species and observations do these make up?
 # 3. Which taxa are these based in?
 # pulling out total species richness and observation counts for later usage
-totals <- plants %>% 
-  union (animals) %>%
+totals <- all_inat %>%
   summarise (num_species = n_distinct (scientific_name),
              num_obs = n())
 total_species <- totals$num_species
 total_obs <- totals$num_obs
 
-names <- all_wfreq %>%
+names <- all_inat %>%
   select(scientific_name:common_name) %>%
   unique()
 
-over8_obs <-dicots %>% 
-  union (monocots) %>%
-  union (ferns) %>%
-  union (conifers) %>%
-  union (birds) %>%
-  union (insects) %>%
-  union (reptiles) %>%
-  union (amphibians) %>%
-  union (mammals) %>%
-  union (gastropods) %>%
+over8_obs <- all_inat %>%
   group_by (scientific_name) %>%
   mutate (num_cities = n_distinct(hometown)) %>%
   filter(num_cities > 7) %>%
@@ -40,16 +30,7 @@ over8_obs <-dicots %>%
 over8_obs
 total_over8obs <- sum(over8_obs$num_obs)
 
-numberCities <-dicots %>% 
-  union (monocots) %>%
-  union (ferns) %>%
-  union (conifers) %>%
-  union (birds) %>%
-  union (insects) %>%
-  union (reptiles) %>%
-  union (amphibians) %>%
-  union (mammals) %>%
-  union (gastropods) %>%
+numberCities <- all_inat %>%
   group_by (taxon, scientific_name) %>%
   summarise (num_cities = n_distinct(hometown)) %>%
   left_join(names, by="scientific_name") %>%
@@ -62,6 +43,24 @@ over8 <- numberCities %>%
   left_join(over8_obs, by = "scientific_name")
 over8
 write.csv(over8, "figures_n_tables/over8.csv")
+
+# Comparisons between over8 with larger pool
+all_stats <- all_inat %>%
+  group_by (taxon) %>%
+  summarise (total_species = n_distinct(scientific_name), total_obs = n())
+all_stats
+
+blanks <- tibble(taxon = c("gastropods", "ferns"), 
+                 over8_species = c(0, 0), 
+                 over8_obs = c(0, 0))
+taxon_over8 <- over8 %>% 
+  group_by(taxon) %>%
+  summarise (over8_species = n_distinct(scientific_name), over8_obs = sum(num_obs)) %>%
+  bind_rows(blanks) %>%
+  left_join(all_stats, by = "taxon") %>%
+  mutate(prop_sp = (over8_species/total_species)*100, prop_obs = (over8_obs/total_obs)*100) %>%
+  arrange(taxon)
+write.csv(taxon_over8, "figures_n_tables/taxon_over8.csv")
 
 # a function to calculate the slope of the n:d4 points!
 get_slope <- function(n, d1, d2, d3, d4) { 
