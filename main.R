@@ -24,6 +24,19 @@ load('data/cities.Rdata')
 all_wfreq$scientific_name <- str_replace(all_wfreq$scientific_name,"Columba livia domestica", "Columba livia")
 all_wfreq$scientific_name <- as.factor(all_wfreq$scientific_name)
 
+all_inat <- all_wfreq %>%
+ mutate(taxon = if_else (taxon_class_name == "Magnoliopsida", "dicots", 
+        if_else (taxon_class_name == "Liliopsida", "monocots",  
+        if_else (taxon_class_name == "Polypodiopsida", "ferns", 
+        if_else (taxon_class_name == "Pinopsida", "conifers",
+        if_else (taxon_class_name == "Aves", "birds",
+        if_else (taxon_class_name == "Insecta", "insectss",
+        if_else (taxon_class_name == "Reptilia", "reptiles",
+        if_else (taxon_class_name == "Amphibia", "amphibians",
+        if_else (taxon_class_name == "Gastropoda", "gastropods",
+        if_else (taxon_class_name == "Mammalia", "mammals","other")))))))))))
+
+
 # data subsets for later use
 plants <- all_wfreq %>% filter(taxon_class_name %in% c("Magnoliopsida", "Liliopsida", "Polypodiopsida", "Pinopsida", "Agaricomycetes", "Lecanoromycetes"))
 animals <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Aves", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
@@ -277,7 +290,6 @@ bdnc
 
 # to make it a bit manageable to share in paper as a table
 big_over100obs <- big_everything %>%
-  arrange(desc()) %>%
   filter(count>=100)
 
 # alternatives to make it a bit manageable to share in paper as a table
@@ -308,7 +320,7 @@ big_simple_ranks <- simple_birds %>%
   left_join(total_cities, by="scientific_name") %>%
   distinct(scientific_name, .keep_all = TRUE) %>%
   filter(num_cities>=4) %>%
-  select(taxon, common_name, scientific_name, count, num_cities, contains("rank")) 
+  
 
 big_simple_counts <- simple_birds %>%
   bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
