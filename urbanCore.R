@@ -11,16 +11,20 @@
 # 2. What proportion of total species and observations do these make up?
 # 3. Which taxa are these based in?
 # pulling out total species richness and observation counts for later usage
+
+# what are the total species numbers and observations in the dataset
 totals <- all_inat %>%
   summarise (num_species = n_distinct (scientific_name),
              num_obs = n())
-total_species <- totals$num_species
-total_obs <- totals$num_obs
+totals$num_species
+totals$num_obs
 
+# for later use to match common names to scientific names
 names <- all_inat %>%
   select(scientific_name:common_name) %>%
   unique()
 
+# filter list down to see which species were found in the majority of cities
 over8_obs <- all_inat %>%
   group_by (scientific_name) %>%
   mutate (num_cities = n_distinct(hometown)) %>%
@@ -28,8 +32,9 @@ over8_obs <- all_inat %>%
   summarise(num_obs = n())%>%
   arrange(desc(num_obs))
 over8_obs
-total_over8obs <- sum(over8_obs$num_obs)
+sum(over8_obs$num_obs)
 
+# creating a way to see the number of cities all species were found int
 numberCities <- all_inat %>%
   group_by (taxon, scientific_name) %>%
   summarise (num_cities = n_distinct(hometown)) %>%
@@ -37,7 +42,9 @@ numberCities <- all_inat %>%
   distinct(scientific_name, .keep_all = TRUE) %>%
   select(taxon, common_name, scientific_name, num_cities) %>%
   arrange(desc(num_cities))
+numberCities
 
+# combining tables to show species found in over 8 cities (how many cities & how many obs)
 over8 <- numberCities %>%
   filter(num_cities > 7) %>%
   left_join(over8_obs, by = "scientific_name")
