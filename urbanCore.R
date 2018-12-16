@@ -116,30 +116,6 @@ plots <- annotate_figure(plots,
 ggsave(plot = plots, filename = "figures_n_tables/bh_CAM_ARM.jpg", height = 24, width = 20, units = "cm")
 
 
-
-
-numberCities_plot <- ggplot(data=numberCities, aes(num_cities, fill = taxon, colour = taxon)) +
-  stat_count(width=0.9) +
-  theme(panel.background = element_blank(), 
-        panel.grid.major = element_blank(),  #remove major-grid labels
-        panel.grid.minor = element_blank())  #remove minor-grid labels
-numberCities_plot
-  
-over8_plot <- ggplot(data=over8, aes(num_cities, fill = taxon, colour = taxon)) +
-  stat_count(width=0.9) +
-  theme(legend.position="none",
-        panel.background = element_blank(), 
-        panel.grid.major = element_blank(),  #remove major-grid labels
-        panel.grid.minor = element_blank())  #remove minor-grid labels)
-  
-over8_plot
-  
-# Insert xbp_grob inside the scatter plot
-over8_grob <- ggplotGrob(over8_plot)
-numberCities_plot + annotation_custom(grob = over8_grob, xmin = 5, xmax = 14, 
-                       ymin = 700, ymax = 2500)
-
-
 # 
 # Top 10 rankings
 # 1. create a taxa list for each city top 10.
