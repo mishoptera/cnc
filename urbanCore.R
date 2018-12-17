@@ -116,10 +116,6 @@ plots <- annotate_figure(plots,
 ggsave(plot = plots, filename = "figures_n_tables/bh_CAM_ARM.jpg", height = 24, width = 20, units = "cm")
 
 
-# 
-# Top 10 rankings
-# 1. create a taxa list for each city top 10.
-# 2. How many taxa are unique to just one city versus found in over 8?
 # okay I already have #1 done with create_big_table_simple function.
 # the trick for me is to figure out which species that have a ranking of over 20
 # are also found on the top 20 lists for other cities.
@@ -141,122 +137,6 @@ big_simple_ranks2 <- simple_birds %>%
 
 View(big_simple_ranks2)
   
-
-# *************************************************************
-# FIGURES ILLUSTRATING THE CAM AND ARM METRICS
-# *************************************************************
-# subset of big everything that pulls out urban specialists
-big_urban_arm <- big_everything %>%
-  arrange(diff_arm, diff_cam) %>%
-  filter(count>=50) %>%
-  filter(taxon != "dicots") %>%
-  filter(diff_arm < -20)%>%
-  rename(d0.mean = n.mean) %>%
-  gather("lc_arm", "arm", d0.mean:d4.mean)
-bua <- ggplot(data=big_urban_arm,aes(x=lc_arm,y=arm, colour=common_name, group=common_name))+
-  geom_point() + 
-  geom_line () +
-  theme_bw() +
-  scale_y_reverse( lim=c(50,0))
-bua
-
-big_natural_arm <-  big_everything %>%
-  arrange(desc(diff_cam, diff_arm))  %>%
-  filter(count>=50) %>%
-  filter(taxon != "dicots") %>%
-  filter(diff_arm > 10)%>%
-  rename(d0.mean = n.mean) %>%
-  gather("lc_arm", "arm", d0.mean:d4.mean)
-bna <- ggplot(data=big_natural_arm,aes(x=lc_arm,y=arm, colour=taxon, group=common_name))+
-  geom_point() + 
-  geom_line () +
-  theme_bw() +
-  scale_y_reverse( lim=c(50,0))
-bna
-
-big_urban_cam <- big_everything %>%
-  arrange(diff_cam, diff_arm) %>%
-  filter(count>=50) %>%
-  filter(taxon != "dicots") %>%
-  filter(diff_cam < -1) %>%
-  rename(d0 = n) %>%
-  gather("lc_cam", "cam", d0:d4)
-buc <- ggplot(data=big_urban_cam,aes(x=lc_cam,y=cam, colour=common_name, group=common_name))+
-  geom_point() + 
-  geom_line() +
-  theme_bw()
-buc
-
-# subset of big_everything that pulls out the natural areas specialists
-big_natural_cam <- big_everything %>%
-  arrange(diff_cam, diff_arm) %>%
-  filter(count>=50) %>%
-  filter(taxon != "dicots") %>%
-  filter(diff_cam > 7) %>%
-  rename(d0 = n) %>%
-  gather("lc_cam", "cam", d0:d4)
-bnc <- ggplot(data=big_natural_cam,aes(x=lc_cam,y=cam, colour=common_name, group=common_name))+
-  geom_point() + 
-  geom_line() +
-  theme_bw()
-bnc
-
-# Same as the above but with dicots only
-big_dicots_urban_arm <- big_everything %>%
-  arrange(diff_arm, diff_cam) %>%
-  filter(count>=50) %>%
-  filter(taxon == "dicots") %>%
-  filter(diff_arm < -50)%>%
-  rename(d0.mean = n.mean) %>%
-  gather("lc_arm", "arm", d0.mean:d4.mean)
-bdua <- ggplot(data=big_dicots_urban_arm,aes(x=lc_arm,y=arm, colour=taxon, group=common_name))+
-  geom_point() + 
-  geom_line () +
-  theme_bw() +
-  scale_y_reverse( lim=c(50,0))
-bdua
-
-big_dicots_natural_arm <-  big_everything %>%
-  arrange(desc(diff_cam, diff_arm))  %>%
-  filter(count>=50) %>%
-  filter(taxon == "dicots") %>%
-  filter(diff_arm > 2)%>%
-  rename(d0.mean = n.mean) %>%
-  gather("lc_arm", "arm", d0.mean:d4.mean)
-bdna <- ggplot(data=big_dicots_natural_arm,aes(x=lc_arm,y=arm, colour=taxon, group=common_name))+
-  geom_point() + 
-  geom_line () +
-  theme_bw() +
-  scale_y_reverse( lim=c(50,0))
-bdna
-
-big_dicots_urban_cam <- big_everything %>%
-  arrange(diff_cam, diff_arm) %>%
-  filter(count>=50) %>%
-  filter(taxon == "dicots") %>%
-  filter(diff_cam < -1) %>%
-  rename(d0 = n) %>%
-  gather("lc_cam", "cam", d0:d4)
-bduc <- ggplot(data=big_dicots_urban_cam,aes(x=lc_cam,y=cam, colour=common_name, group=common_name))+
-  geom_point() + 
-  geom_line() +
-  theme_bw()
-bduc
-
-big_dicots_natural_cam <- big_everything %>%
-  arrange(diff_cam, diff_arm) %>%
-  filter(count>=50) %>%
-  filter(taxon == "dicots") %>%
-  filter(diff_cam > 7) %>%
-  rename(d0 = n) %>%
-  gather("lc_cam", "cam", d0:d4)
-bdnc <- ggplot(data=big_dicots_natural_cam,aes(x=lc_cam,y=cam, colour=common_name, group=common_name))+
-  geom_point() + 
-  geom_line() +
-  theme_bw()
-bdnc
-
-
 
 
 # *************************************************************
