@@ -81,10 +81,10 @@ ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
 source('functions/cc_functions.r')
 
 # All Taxa
-cc_all <- cc_matrix(all_wfreq)
+cc_all <- cc_matrix(all_inat)
 cc_all_env <- cc_env(cc_all)
 plot_cc_us(cc_all, cc_all_env, "All taxa")          # Figure 2
-plot_cc_region_4(all_wfreq, "All taxa")             # Figure 4
+plot_cc_region_4(all_inat, "All taxa")             # Figure 4
 
 # All Plants
 cc_plants <- cc_matrix(plants) 
@@ -112,9 +112,6 @@ tab_animals <- adonis.table.lc(animals) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
 write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 3
 
-# Creating a community composition figure that shows bird species names
-cc_california <- birds %>% filter(hometown %in% c("sanfrancisco", "losangeles"))
-plot_cc_region_species(cc_california, "California")               # Figure 5
 
 # *************************************************************
 # INDIVIDUAL SPECIES PATTERNS BY LAND COVER (Table 4)
@@ -391,4 +388,8 @@ write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
 top10_knit(plants)
 top10_knit(animals)
 
+# Worth including still?
+# Creating a community composition figure that shows bird species names
+cc_california <- all_inat %>% filter (taxon == "birds") %>% filter(hometown %in% c("sanfrancisco", "losangeles"))
+plot_cc_region_species(cc_california, "California")               # Figure 5
 

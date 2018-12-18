@@ -325,7 +325,7 @@ adonis_p <- function (perm) {
 
 
 # ////////////////////////////////////////
-# Plotting with species names on a regional scale
+# Plotting with species names on a regional scale. Still worth including?
 plot_cc_region_species <- function (taxa, title) {
   all_matrix <- cc_matrix_commonnames(taxa)
   all_env <- cc_env(all_matrix)
