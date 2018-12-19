@@ -36,22 +36,9 @@ all_inat <- all_wfreq %>%
         if_else (taxon_class_name == "Gastropoda", "gastropods",
         if_else (taxon_class_name == "Mammalia", "mammals","other")))))))))))
 
-
 # data subsets for later use
 plants <- all_wfreq %>% filter(taxon_class_name %in% c("Magnoliopsida", "Liliopsida", "Polypodiopsida", "Pinopsida", "Agaricomycetes", "Lecanoromycetes"))
 animals <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Aves", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
-dicots <- all_wfreq %>% filter(taxon_class_name == "Magnoliopsida") %>% mutate (taxon="dicots")
-monocots <- all_wfreq %>% filter(taxon_class_name == "Liliopsida") %>% mutate (taxon="monocots")
-ferns <- all_wfreq %>% filter(taxon_class_name == "Polypodiopsida")%>% mutate (taxon="ferns")
-conifers <- all_wfreq %>% filter(taxon_class_name == "Pinopsida") %>% mutate (taxon="conifers")
-birds <- all_wfreq %>% filter(taxon_class_name == "Aves") %>% mutate (taxon="birds")
-insects <- all_wfreq %>% filter(taxon_class_name == "Insecta") %>% mutate (taxon="insects")
-arachnids <- all_wfreq %>% filter(taxon_class_name == "Arachnida") %>% mutate (taxon="arachnids")
-reptiles <- all_wfreq %>% filter(taxon_class_name == "Reptilia") %>% mutate (taxon="reptiles")
-amphibians <- all_wfreq %>% filter(taxon_class_name == "Amphibia") %>% mutate (taxon="amphibians")
-mammals <- all_wfreq %>% filter(taxon_class_name == "Mammalia") %>% mutate (taxon="mammals")
-gastropods <- all_wfreq %>% filter(taxon_class_name == "Gastropoda") %>% mutate (taxon="gastropods")
-
 
 
 # *************************************************************
@@ -122,12 +109,14 @@ taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "
 
 # create simple ranking tables for each taxa (landcover collapsed)
 lapply(taxa_names, function(i){
-  assign(paste0("simple_", i) , create_big_table_simple(get(i), i), envir = .GlobalEnv)
+  assign(paste0("simple_", i) , create_big_table_simple(all_inat %>% filter (taxon == i), i), 
+         envir = .GlobalEnv)
 })
 
 # create big ranking tables for each taxa
 lapply(taxa_names, function(i){
-  assign(paste0("ranks_", i) , create_big_table(get(i)), envir = .GlobalEnv)
+  assign(paste0("ranks_", i) , create_big_table(all_inat %>% filter (taxon == i)), 
+         envir = .GlobalEnv)
 })
 
 # create city aggregation metric tables
@@ -152,12 +141,12 @@ lapply(taxa_names, function(i){
 
 
 # to be able to add common names to table
-names <- all_wfreq %>%
+names <- all_inat%>%
   select(scientific_name:common_name) %>%
   unique()
 
 # how many cities does each species appear in?
-total_cities <- all_wfreq %>%
+total_cities <- all_inat %>%
   group_by (scientific_name) %>%
   summarise (num_cities = n_distinct(hometown)) %>%
   select(scientific_name, num_cities)
