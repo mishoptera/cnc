@@ -63,7 +63,106 @@ ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
 
 
 # *************************************************************
-# COMMUNITY COMPOSITION (Figures 2-5, Tables 2 & 3)
+# URBAN HOMOGENIZATION BETWEEN CITIES?
+# *************************************************************
+source('functions/isp_functions.r')
+taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
+
+# create simple ranking tables for each taxa (landcover collapsed)
+lapply(taxa_names, function(i){
+  assign(paste0("simple_", i) , create_big_table_simple(all_inat %>% filter (taxon == i), i), 
+         envir = .GlobalEnv)
+})
+
+# how many cities does each species appear in?
+total_cities <- all_wfreq %>%
+  group_by (scientific_name) %>%
+  summarise (num_cities = n_distinct(hometown)) %>%
+  select(scientific_name, num_cities)
+
+# table that collapses all land cover types, but pulls out each city
+big_simple_ranks <- simple_birds %>%
+  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
+  left_join(names, by="scientific_name") %>%
+  left_join(total_cities, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  filter(num_cities>=4)
+  
+  
+  big_simple_counts <- simple_birds %>%
+  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
+  left_join(names, by="scientific_name") %>%
+  left_join(total_cities, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  filter(num_cities>=4) %>%
+  select(taxon, common_name, scientific_name, count, num_cities, contains("count")) 
+
+write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")    # Table 4 alternative
+write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_coun.csv")    # Table 4 alternative
+
+
+# pulling out total species richness and observation counts for later usage
+totals <- plants %>% 
+  union (animals) %>%
+  summarise (num_species = n_distinct (scientific_name),
+             num_obs = n())
+total_species <- totals$num_species
+total_obs <- totals$num_obs
+
+# a filtered down subset of the above total
+subsets <- plants %>% 
+  union (animals) %>%
+  group_by(scientific_name)%>%
+  mutate (count = n()) %>%
+  filter(count>=100) %>%
+  ungroup() %>%
+  summarise (num_species = n_distinct (scientific_name),
+             num_obs = n())
+subset_species <- subsets$num_species
+subset_obs <- subsets$num_obs
+
+# creating a table of the 10 taxon classes that looks at how frequently
+# species from these groups have at least 100 observations.  For example,
+# birds are over represented in this frequently observed group compared to insects
+over100 <- plants %>%
+  union (animals) %>%
+  group_by(scientific_name)%>%
+  mutate (count = n()) %>%
+  group_by(taxon_class_name)%>%
+  filter(count>=100) %>%
+  summarise (subset_num_species =  n_distinct(scientific_name),
+             subset_num_obs = n(), 
+             subset_ratio_species = subset_num_species / subset_species,
+             subset_ratio_obs = subset_num_obs / subset_obs) 
+
+
+everything <- plants %>%
+  union (animals) %>%
+  group_by(taxon_class_name)%>%
+  summarise (all_num_species =  n_distinct(scientific_name),
+             all_num_obs = n(), 
+             all_ratio_species = all_num_species / total_species, 
+             all_ratio_obs = all_num_obs / total_obs) %>%
+  arrange(desc(all_num_species)) %>%
+  left_join(over100, by = "taxon_class_name") %>%
+  mutate (diff_species = all_ratio_species - subset_ratio_species,
+          diff_obs = all_ratio_obs - subset_ratio_obs) 
+everything    # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
+write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
+
+# Top10 lists for all cities
+top10_knit(plants)
+top10_knit(animals)
+
+# Worth including still?
+# Creating a community composition figure that shows bird species names
+cc_california <- all_inat %>% filter (taxon == "birds") %>% filter(hometown %in% c("sanfrancisco", "losangeles"))
+plot_cc_region_species(cc_california, "California")               # Figure 5
+
+
+
+# *************************************************************
+# WITHIN CITY - COMMUNITY COMPOSITION (Figures 2-5, Tables 2 & 3)
 # *************************************************************
 source('functions/cc_functions.r')
 
@@ -101,17 +200,11 @@ write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 3
 
 
 # *************************************************************
-# INDIVIDUAL SPECIES PATTERNS BY LAND COVER (Table 4)
+# WITHIN CITY - INDIVIDUAL SPECIES PATTERNS (Table 4)
 # *************************************************************
 source('functions/isp_functions.r')
 
 taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
-
-# create simple ranking tables for each taxa (landcover collapsed)
-lapply(taxa_names, function(i){
-  assign(paste0("simple_", i) , create_big_table_simple(all_inat %>% filter (taxon == i), i), 
-         envir = .GlobalEnv)
-})
 
 # create big ranking tables for each taxa
 lapply(taxa_names, function(i){
@@ -161,114 +254,16 @@ big_everything <- big_birds %>%
   mutate (diff_arm = (d3.mean+d4.mean)-(n.mean+d1.mean)) %>%
   select(taxon, common_name, scientific_name, count, num_cities, 
          diff_cam, diff_arm, everything())
- 
-
-
-# to make it a bit manageable to share in paper as a table
-big_over100obs <- big_everything %>%
-  filter(count>=100)
 
 # alternatives to make it a bit manageable to share in paper as a table
 big_top10s <- big_everything %>%
   filter(rank<=10)
 big_over4cities <- big_everything %>%
   filter(num_cities>=4)
+big_over100obs <- big_everything %>%
+  filter(count>=100)
 
 write.csv(big_everything, "figures_n_tables/big_everything.csv")
 write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
 write.csv(big_top10s, "figures_n_tables/big_top10s.csv")    # Table 4 alternative
 write.csv(big_over4cities, "figures_n_tables/big_over4cities.csv")    # Table 4 alternative
-
-# *************************************************************
-# INDIVIDUAL SPECIES PATTERNS BY CITIES
-# *************************************************************
-
-# how many cities does each species appear in?
-total_cities <- all_wfreq %>%
-  group_by (scientific_name) %>%
-  summarise (num_cities = n_distinct(hometown)) %>%
-  select(scientific_name, num_cities)
-
-# table that collapses all land cover types, but pulls out each city
-big_simple_ranks <- simple_birds %>%
-  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
-  left_join(names, by="scientific_name") %>%
-  left_join(total_cities, by="scientific_name") %>%
-  distinct(scientific_name, .keep_all = TRUE) %>%
-  filter(num_cities>=4) %>%
-  
-
-big_simple_counts <- simple_birds %>%
-  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
-  left_join(names, by="scientific_name") %>%
-  left_join(total_cities, by="scientific_name") %>%
-  distinct(scientific_name, .keep_all = TRUE) %>%
-  filter(num_cities>=4) %>%
-  select(taxon, common_name, scientific_name, count, num_cities, contains("count")) 
-
-write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")    # Table 4 alternative
-write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_coun.csv")    # Table 4 alternative
-
-
-# *************************************************************
-# EXTRA SUMMARY STATS OF INTEREST (Table 5)
-# *************************************************************
-
-# pulling out total species richness and observation counts for later usage
-totals <- plants %>% 
-  union (animals) %>%
-  summarise (num_species = n_distinct (scientific_name),
-             num_obs = n())
-total_species <- totals$num_species
-total_obs <- totals$num_obs
-
-# a filtered down subset of the above total
-subsets <- plants %>% 
-  union (animals) %>%
-  group_by(scientific_name)%>%
-  mutate (count = n()) %>%
-  filter(count>=100) %>%
-  ungroup() %>%
-  summarise (num_species = n_distinct (scientific_name),
-             num_obs = n())
-subset_species <- subsets$num_species
-subset_obs <- subsets$num_obs
-
-# creating a table of the 10 taxon classes that looks at how frequently
-# species from these groups have at least 100 observations.  For example,
-# birds are over represented in this frequently observed group compared to insects
-over100 <- plants %>%
-  union (animals) %>%
-  group_by(scientific_name)%>%
-  mutate (count = n()) %>%
-  group_by(taxon_class_name)%>%
-  filter(count>=100) %>%
-  summarise (subset_num_species =  n_distinct(scientific_name),
-             subset_num_obs = n(), 
-             subset_ratio_species = subset_num_species / subset_species,
-             subset_ratio_obs = subset_num_obs / subset_obs) 
-  
-  
-everything <- plants %>%
-  union (animals) %>%
-  group_by(taxon_class_name)%>%
-  summarise (all_num_species =  n_distinct(scientific_name),
-             all_num_obs = n(), 
-             all_ratio_species = all_num_species / total_species, 
-             all_ratio_obs = all_num_obs / total_obs) %>%
-  arrange(desc(all_num_species)) %>%
-  left_join(over100, by = "taxon_class_name") %>%
-  mutate (diff_species = all_ratio_species - subset_ratio_species,
-          diff_obs = all_ratio_obs - subset_ratio_obs) 
-everything    # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
-write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
-
-# Top10 lists for all cities
-top10_knit(plants)
-top10_knit(animals)
-
-# Worth including still?
-# Creating a community composition figure that shows bird species names
-cc_california <- all_inat %>% filter (taxon == "birds") %>% filter(hometown %in% c("sanfrancisco", "losangeles"))
-plot_cc_region_species(cc_california, "California")               # Figure 5
-
