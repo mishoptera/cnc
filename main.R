@@ -80,6 +80,52 @@ total_cities <- all_wfreq %>%
   summarise (num_cities = n_distinct(hometown)) %>%
   select(scientific_name, num_cities)
 
+# what are the total species numbers and observations in the dataset
+totals <- all_inat %>%
+  summarise (num_species = n_distinct (scientific_name),
+             num_obs = n())
+totals$num_species
+totals$num_obs
+
+# for later use to match common names to scientific names
+names <- all_inat %>%
+  select(scientific_name:common_name) %>%
+  unique()
+
+# creating a way to see the number of cities all species were found in
+over8 <- all_inat %>%
+  group_by (taxon, scientific_name) %>%
+  summarise (num_cities = n_distinct(hometown), num_obs = n()) %>%
+  left_join(names, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  select(taxon, common_name, scientific_name, num_cities, num_obs) %>%
+  filter(num_cities > 7) %>%
+  arrange(desc(num_cities))
+over8
+write.csv(over8, "figures_n_tables/over8.csv")
+
+# Comparisons between over8 with larger pool grouped by taxon group
+# This is the larger pool
+all_stats <- all_inat %>%
+  group_by (taxon) %>%
+  summarise (total_species = n_distinct(scientific_name), total_obs = n())
+all_stats
+
+# this is to create blank variables for the taxon groups that do not have any species in >8 cities
+blanks <- tibble(taxon = c("gastropods", "ferns"), 
+                 over8_species = c(0, 0), 
+                 over8_obs = c(0, 0))
+
+# nice final data with the data all togther
+taxon_over8 <- over8 %>% 
+  group_by(taxon) %>%
+  summarise (over8_species = n_distinct(scientific_name), over8_obs = sum(num_obs)) %>%
+  bind_rows(blanks) %>%
+  left_join(all_stats, by = "taxon") %>%
+  mutate(prop_sp = (over8_species/total_species)*100, prop_obs = (over8_obs/total_obs)*100) %>%
+  arrange(taxon)
+write.csv(taxon_over8, "figures_n_tables/taxon_over8.csv")
+
 # table that collapses all land cover types, but pulls out each city
 big_simple_ranks <- simple_birds %>%
   bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
@@ -196,7 +242,6 @@ write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 3
 # WITHIN CITY - INDIVIDUAL SPECIES PATTERNS (Table 4)
 # *************************************************************
 source('functions/isp_functions.r')
-
 taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
 
 # create big ranking tables for each taxa
