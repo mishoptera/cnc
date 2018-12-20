@@ -24,6 +24,7 @@ load('data/cities.Rdata')
 all_wfreq$scientific_name <- str_replace(all_wfreq$scientific_name,"Columba livia domestica", "Columba livia")
 all_wfreq$scientific_name <- as.factor(all_wfreq$scientific_name)
 
+# adding taxon labels
 all_inat <- all_wfreq %>%
  mutate(taxon = if_else (taxon_class_name == "Magnoliopsida", "dicots", 
         if_else (taxon_class_name == "Liliopsida", "monocots",  
@@ -37,9 +38,8 @@ all_inat <- all_wfreq %>%
         if_else (taxon_class_name == "Mammalia", "mammals","other")))))))))))
 
 # data subsets for later use
-plants <- all_wfreq %>% filter(taxon_class_name %in% c("Magnoliopsida", "Liliopsida", "Polypodiopsida", "Pinopsida", "Agaricomycetes", "Lecanoromycetes"))
-animals <- all_wfreq %>% filter(taxon_class_name %in% c("Arachnida", "Aves", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
-
+plants <- all_inat %>% filter(taxon_class_name %in% c("Magnoliopsida", "Liliopsida", "Polypodiopsida", "Pinopsida", "Agaricomycetes", "Lecanoromycetes"))
+animals <- all_inat %>% filter(taxon_class_name %in% c("Arachnida", "Aves", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
 
 # *************************************************************
 # MAP OF CNC CITIES (Figure 1)
@@ -63,7 +63,7 @@ ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
 
 
 # *************************************************************
-# URBAN HOMOGENIZATION BETWEEN CITIES?
+# URBAN HOMOGENIZATION BETWEEN CITIES
 # *************************************************************
 source('functions/isp_functions.r')
 taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
@@ -88,8 +88,7 @@ big_simple_ranks <- simple_birds %>%
   distinct(scientific_name, .keep_all = TRUE) %>%
   filter(num_cities>=4)
   
-  
-  big_simple_counts <- simple_birds %>%
+big_simple_counts <- simple_birds %>%
   bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
   left_join(names, by="scientific_name") %>%
   left_join(total_cities, by="scientific_name") %>%
@@ -97,8 +96,9 @@ big_simple_ranks <- simple_birds %>%
   filter(num_cities>=4) %>%
   select(taxon, common_name, scientific_name, count, num_cities, contains("count")) 
 
+# save these files
 write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")    # Table 4 alternative
-write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_coun.csv")    # Table 4 alternative
+write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_counts.csv")    # Table 4 alternative
 
 
 # pulling out total species richness and observation counts for later usage
@@ -135,7 +135,6 @@ over100 <- plants %>%
              subset_ratio_species = subset_num_species / subset_species,
              subset_ratio_obs = subset_num_obs / subset_obs) 
 
-
 everything <- plants %>%
   union (animals) %>%
   group_by(taxon_class_name)%>%
@@ -147,19 +146,13 @@ everything <- plants %>%
   left_join(over100, by = "taxon_class_name") %>%
   mutate (diff_species = all_ratio_species - subset_ratio_species,
           diff_obs = all_ratio_obs - subset_ratio_obs) 
+
 everything    # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
 write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
 
 # Top10 lists for all cities
 top10_knit(plants)
 top10_knit(animals)
-
-# Worth including still?
-# Creating a community composition figure that shows bird species names
-cc_california <- all_inat %>% filter (taxon == "birds") %>% filter(hometown %in% c("sanfrancisco", "losangeles"))
-plot_cc_region_species(cc_california, "California")               # Figure 5
-
-
 
 # *************************************************************
 # WITHIN CITY - COMMUNITY COMPOSITION (Figures 2-5, Tables 2 & 3)
