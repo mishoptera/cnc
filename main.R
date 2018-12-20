@@ -305,3 +305,61 @@ write.csv(big_everything, "figures_n_tables/big_everything.csv")
 write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
 write.csv(big_top10s, "figures_n_tables/big_top10s.csv")    # Table 4 alternative
 write.csv(big_over4cities, "figures_n_tables/big_over4cities.csv")    # Table 4 alternative
+
+###################################################
+# CALCULATING SLOPES BASED ON CAM AND ARM
+###################################################
+
+# a function to calculate the slope of the n:d4 points!
+get_slope <- function(n, d1, d2, d3, d4) { 
+  x <- c(1:5)
+  y <- c(n, d1, d2, d3, d4)
+  slope_result <- lm(y~x, na.action=na.exclude)$coeff[[2]]
+  return(slope_result)
+}
+
+# creating a table of the arm and cam slopes
+slopes <- big_over100obs %>%
+  rowwise() %>%  #this is such an important thing!!!
+  mutate(slope_cam = get_slope(n,d1, d2, d3, d4)) %>%
+  mutate(slope_arm = get_slope(n.mean,d1.mean, d2.mean, d3.mean, d4.mean)) %>%
+  ungroup() 
+
+# plotting the cam slopes
+cam_labels_over <- slopes %>%
+  filter(slope_cam >0) %>%
+  filter(num_cities>7)
+cam_labels_under <- slopes %>%
+  filter(slope_cam < -1) %>%
+  filter(num_cities>7)
+plot_cam <- ggplot(data=slopes,aes(x=num_cities,y=slope_cam, colour=taxon))+
+  geom_point() + 
+  labs(title = "evaluated with City Aggregation Metric", x = "number of cities", y = "slope of CAM") +
+  geom_text_repel(data = cam_labels_over, aes(x=num_cities, y=slope_cam, label = common_name)) + 
+  geom_text_repel(data = cam_labels_under, aes(x=num_cities, y=slope_cam, label = common_name)) + 
+  theme_bw() 
+plot_cam
+
+# plotting the arm slopes
+arm_labels_over <- slopes %>%
+  filter(slope_arm < -2) %>%
+  filter(num_cities>7)
+arm_labels_under <- slopes %>%
+  filter(slope_arm > 0 ) %>%
+  filter(num_cities>7)
+plot_arm <- ggplot(data=arm_slopes,aes(x=num_cities,y=slope_arm, colour=taxon))+
+  geom_point() + 
+  geom_text_repel(data = arm_labels_over, aes(x=num_cities, y=slope_arm, label = common_name)) + 
+  geom_text_repel(data = arm_labels_under, aes(x=num_cities, y=slope_arm, label = common_name)) + 
+  labs(title = "evaluated with Averaged Ranking Metric", x = "number of cities", y = "slope of ARM") +
+  theme_bw()+
+  scale_y_reverse(lim=c(8, -8))
+plot_arm
+
+# Combine the cam and arm slopes into one lovely figure and save
+plots <- ggarrange(plot_cam, plot_arm, labels = c("A", "B"), ncol = 1, nrow = 2)
+plots <- annotate_figure(plots,
+                         top = text_grob("Biotic homogenization with urbanization intensity", face = "bold", size = 18))
+ggsave(plot = plots, filename = "figures_n_tables/bh_CAM_ARM.jpg", height = 24, width = 20, units = "cm")
+
+
