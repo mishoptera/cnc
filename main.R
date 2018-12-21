@@ -20,6 +20,10 @@ library(stringr)
 load('data/all_wfreq.Rdata')
 load('data/cities.Rdata')
 
+# source files
+source('functions/isp_functions.r')
+source('functions/cc_functions.r')
+
 # some last minute file cleaning
 all_wfreq$scientific_name <- str_replace(all_wfreq$scientific_name,"Columba livia domestica", "Columba livia")
 all_wfreq$scientific_name <- as.factor(all_wfreq$scientific_name)
@@ -65,22 +69,14 @@ ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
 # *************************************************************
 # URBAN HOMOGENIZATION BETWEEN CITIES
 # *************************************************************
-source('functions/isp_functions.r')
-taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
-
-# create simple ranking tables for each taxa (landcover collapsed)
-lapply(taxa_names, function(i){
-  assign(paste0("simple_", i) , create_big_table_simple(all_inat %>% filter (taxon == i), i), 
-         envir = .GlobalEnv)
-})
-
+# // GENERAL STATS
 # how many cities does each species appear in?
 total_cities <- all_wfreq %>%
   group_by (scientific_name) %>%
   summarise (num_cities = n_distinct(hometown)) %>%
   select(scientific_name, num_cities)
 
-# what are the total species numbers and observations in the dataset
+# what are the total species numbers and observations in the dataset?
 totals <- all_inat %>%
   summarise (num_species = n_distinct (scientific_name),
              num_obs = n())
@@ -92,7 +88,7 @@ names <- all_inat %>%
   select(scientific_name:common_name) %>%
   unique()
 
-# creating a way to see the number of cities all species were found in
+# the number of cities all cosmopolitan species were found in
 over8 <- all_inat %>%
   group_by (taxon, scientific_name) %>%
   summarise (num_cities = n_distinct(hometown), num_obs = n()) %>%
@@ -125,27 +121,6 @@ taxon_over8 <- over8 %>%
   mutate(prop_sp = (over8_species/total_species)*100, prop_obs = (over8_obs/total_obs)*100) %>%
   arrange(taxon)
 write.csv(taxon_over8, "figures_n_tables/taxon_over8.csv")
-
-# table that collapses all land cover types, but pulls out each city
-big_simple_ranks <- simple_birds %>%
-  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
-  left_join(names, by="scientific_name") %>%
-  left_join(total_cities, by="scientific_name") %>%
-  distinct(scientific_name, .keep_all = TRUE) %>%
-  filter(num_cities>=4)
-  
-big_simple_counts <- simple_birds %>%
-  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
-  left_join(names, by="scientific_name") %>%
-  left_join(total_cities, by="scientific_name") %>%
-  distinct(scientific_name, .keep_all = TRUE) %>%
-  filter(num_cities>=4) %>%
-  select(taxon, common_name, scientific_name, count, num_cities, contains("count")) 
-
-# save these files
-write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")    # Table 4 alternative
-write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_counts.csv")    # Table 4 alternative
-
 
 # pulling out total species richness and observation counts for later usage
 totals <- plants %>% 
@@ -199,6 +174,36 @@ write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
 # Top10 lists for all cities
 top10_knit(plants)
 top10_knit(animals)
+
+# // TABLE LOOKING AT OVERALL SPECIES RANKS BETEEEN CITIES
+source('functions/isp_functions.r')
+taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
+
+# create simple ranking tables for each taxa (landcover collapsed)
+lapply(taxa_names, function(i){
+  assign(paste0("simple_", i) , create_big_table_simple(all_inat %>% filter (taxon == i), i), 
+         envir = .GlobalEnv)
+})
+
+# table that collapses all land cover types, but pulls out each city
+big_simple_ranks <- simple_birds %>%
+  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
+  left_join(names, by="scientific_name") %>%
+  left_join(total_cities, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  filter(num_cities>=4)
+
+big_simple_counts <- simple_birds %>%
+  bind_rows(simple_mammals, simple_reptiles, simple_amphibians, simple_gastropods, simple_insects, simple_dicots, simple_monocots, simple_ferns, simple_conifers) %>%
+  left_join(names, by="scientific_name") %>%
+  left_join(total_cities, by="scientific_name") %>%
+  distinct(scientific_name, .keep_all = TRUE) %>%
+  filter(num_cities>=4) %>%
+  select(taxon, common_name, scientific_name, count, num_cities, contains("count")) 
+
+# save these files
+write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")    # Table 4 alternative
+write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_counts.csv")    # Table 4 alternative
 
 # *************************************************************
 # WITHIN CITY - COMMUNITY COMPOSITION (Figures 2-5, Tables 2 & 3)
@@ -306,9 +311,10 @@ write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
 write.csv(big_top10s, "figures_n_tables/big_top10s.csv")    # Table 4 alternative
 write.csv(big_over4cities, "figures_n_tables/big_over4cities.csv")    # Table 4 alternative
 
-###################################################
-# CALCULATING SLOPES BASED ON CAM AND ARM
-###################################################
+
+# *************************************************************
+# CALCULATING AND PLOTTING SLOPES BASED ON CAM AND ARM
+# *************************************************************
 
 # a function to calculate the slope of the n:d4 points!
 get_slope <- function(n, d1, d2, d3, d4) { 
