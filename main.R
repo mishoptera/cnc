@@ -24,10 +24,6 @@ load('data/cities.Rdata')
 source('functions/isp_functions.r')
 source('functions/cc_functions.r')
 
-# some last minute file cleaning
-all_wfreq$scientific_name <- str_replace(all_wfreq$scientific_name,"Columba livia domestica", "Columba livia")
-all_wfreq$scientific_name <- as.factor(all_wfreq$scientific_name)
-
 # adding taxon labels
 all_inat <- all_wfreq %>%
  mutate(taxon = if_else (taxon_class_name == "Magnoliopsida", "dicots", 
@@ -40,6 +36,10 @@ all_inat <- all_wfreq %>%
         if_else (taxon_class_name == "Amphibia", "amphibians",
         if_else (taxon_class_name == "Gastropoda", "gastropods",
         if_else (taxon_class_name == "Mammalia", "mammals","other")))))))))))
+
+# some last minute file cleaning
+all_inat$scientific_name <- str_replace(all_inat$scientific_name,"Columba livia domestica", "Columba livia")
+all_inat$scientific_name <- as.factor(all_inat$scientific_name)
 
 # data subsets for later use
 plants <- all_inat %>% filter(taxon_class_name %in% c("Magnoliopsida", "Liliopsida", "Polypodiopsida", "Pinopsida", "Agaricomycetes", "Lecanoromycetes"))
@@ -83,12 +83,14 @@ totals <- all_inat %>%
 totals$num_species
 totals$num_obs
 
+
+
 # for later use to match common names to scientific names
 names <- all_inat %>%
   select(scientific_name:common_name) %>%
   unique()
 
-# the number of cities all cosmopolitan species were found in
+# Table of all species found in > 8 cities
 over8 <- all_inat %>%
   group_by (taxon, scientific_name) %>%
   summarise (num_cities = n_distinct(hometown), num_obs = n()) %>%
@@ -100,8 +102,7 @@ over8 <- all_inat %>%
 over8
 write.csv(over8, "figures_n_tables/over8.csv")
 
-# Comparisons between over8 with larger pool grouped by taxon group
-# This is the larger pool
+# BY TAXON, overall number of observations and and number of species to use for taxon_over8
 all_stats <- all_inat %>%
   group_by (taxon) %>%
   summarise (total_species = n_distinct(scientific_name), total_obs = n())
@@ -112,7 +113,7 @@ blanks <- tibble(taxon = c("gastropods", "ferns"),
                  over8_species = c(0, 0), 
                  over8_obs = c(0, 0))
 
-# nice final data with the data all togther
+# Table by taxon, showing number of species and observations of cosmopolitan species
 taxon_over8 <- over8 %>% 
   group_by(taxon) %>%
   summarise (over8_species = n_distinct(scientific_name), over8_obs = sum(num_obs)) %>%
@@ -122,49 +123,39 @@ taxon_over8 <- over8 %>%
   arrange(taxon)
 write.csv(taxon_over8, "figures_n_tables/taxon_over8.csv")
 
-# pulling out total species richness and observation counts for later usage
-totals <- plants %>% 
-  union (animals) %>%
-  summarise (num_species = n_distinct (scientific_name),
-             num_obs = n())
-total_species <- totals$num_species
-total_obs <- totals$num_obs
-
-# a filtered down subset of the above total
-subsets <- plants %>% 
-  union (animals) %>%
+# To compare to overall totals, a subset of only those species with more than 100 observations
+subset100 <- all_inat %>%
   group_by(scientific_name)%>%
   mutate (count = n()) %>%
   filter(count>=100) %>%
   ungroup() %>%
   summarise (num_species = n_distinct (scientific_name),
              num_obs = n())
-subset_species <- subsets$num_species
-subset_obs <- subsets$num_obs
+subset100$num_species
+subset100$num_obs
+
 
 # creating a table of the 10 taxon classes that looks at how frequently
 # species from these groups have at least 100 observations.  For example,
 # birds are over represented in this frequently observed group compared to insects
-over100 <- plants %>%
-  union (animals) %>%
+over100 <- all_inat %>%
   group_by(scientific_name)%>%
   mutate (count = n()) %>%
-  group_by(taxon_class_name)%>%
+  group_by(taxon)%>%
   filter(count>=100) %>%
   summarise (subset_num_species =  n_distinct(scientific_name),
              subset_num_obs = n(), 
-             subset_ratio_species = subset_num_species / subset_species,
-             subset_ratio_obs = subset_num_obs / subset_obs) 
+             subset_ratio_species = subset_num_species / subset100$num_species,
+             subset_ratio_obs = subset_num_obs / subset100$num_obs) 
 
-everything <- plants %>%
-  union (animals) %>%
-  group_by(taxon_class_name)%>%
+everything <-all_inat %>%
+  group_by(taxon)%>%
   summarise (all_num_species =  n_distinct(scientific_name),
              all_num_obs = n(), 
-             all_ratio_species = all_num_species / total_species, 
-             all_ratio_obs = all_num_obs / total_obs) %>%
+             all_ratio_species = all_num_species / totals$num_species, 
+             all_ratio_obs = all_num_obs / totals$num_obs) %>%
   arrange(desc(all_num_species)) %>%
-  left_join(over100, by = "taxon_class_name") %>%
+  left_join(over100, by = "taxon") %>%
   mutate (diff_species = all_ratio_species - subset_ratio_species,
           diff_obs = all_ratio_obs - subset_ratio_obs) 
 
