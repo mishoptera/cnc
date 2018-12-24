@@ -71,7 +71,7 @@ ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
 # *************************************************************
 # // GENERAL STATS
 # how many cities does each species appear in?
-total_cities <- all_wfreq %>%
+total_cities <- all_inat %>%
   group_by (scientific_name) %>%
   summarise (num_cities = n_distinct(hometown)) %>%
   select(scientific_name, num_cities)
