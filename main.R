@@ -17,7 +17,7 @@ library(ggpubr)
 library(stringr)
 
 # load files
-load('data/all_wfreq.Rdata')
+load('data/all)_inat.Rdata')
 load('data/cities.Rdata')
 
 # source files
@@ -25,7 +25,7 @@ source('functions/isp_functions.r')
 source('functions/cc_functions.r')
 
 # adding taxon labels
-all_inat <- all_wfreq %>%
+all_inat <- all_inat %>%
  mutate(taxon = if_else (taxon_class_name == "Magnoliopsida", "dicots", 
         if_else (taxon_class_name == "Liliopsida", "monocots",  
         if_else (taxon_class_name == "Polypodiopsida", "ferns", 
