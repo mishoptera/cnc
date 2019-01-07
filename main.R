@@ -67,7 +67,7 @@ ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
 
 
 # *************************************************************
-# URBAN HOMOGENIZATION BETWEEN CITIES
+# URBAN HOMOGENIZATION BETWEEN CITIES (Table 2)
 # *************************************************************
 # // GENERAL STATS
 # how many cities does each species appear in?
@@ -121,7 +121,7 @@ taxon_over8 <- over8 %>%
   left_join(all_stats, by = "taxon") %>%
   mutate(prop_sp = (over8_species/total_species)*100, prop_obs = (over8_obs/total_obs)*100) %>%
   arrange(taxon)
-write.csv(taxon_over8, "figures_n_tables/taxon_over8.csv")
+write.csv(taxon_over8, "figures_n_tables/taxon_over8.csv")    # TABLE 2
 
 # To compare to overall totals, a subset of only those species with more than 100 observations
 subset100 <- all_inat %>%
@@ -197,7 +197,7 @@ write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")
 write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_counts.csv")    # Table 4 alternative
 
 # *************************************************************
-# WITHIN CITY - COMMUNITY COMPOSITION (Figures 2-5, Tables 2 & 3)
+# WITHIN CITY - COMMUNITY COMPOSITION (Figures 2-5, Tables 3 & 4)
 # *************************************************************
 source('functions/cc_functions.r')
 
@@ -224,18 +224,18 @@ tab_all <- adonis.table.hometown(all_wfreq) %>% mutate (taxon = "all")
 tab_plants <- adonis.table.hometown(plants) %>% mutate (taxon = "plants")
 tab_animals <- adonis.table.hometown(animals) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "figures_n_tables/permanova_results_hometown.csv")       # Table 2
+write.csv(tab, "figures_n_tables/permanova_results_hometown.csv")       # Table 3
 
 # Create a table of PERMANOVA results for all taxa in all regions, nested by land cover type.
 tab_all <- adonis.table.lc(all_wfreq) %>% mutate (taxon = "all")
 tab_plants <- adonis.table.lc(plants) %>% mutate (taxon = "plants")
 tab_animals <- adonis.table.lc(animals) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 3
+write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 4
 
 
 # *************************************************************
-# WITHIN CITY - INDIVIDUAL SPECIES PATTERNS (Table 4)
+# WITHIN CITY - INDIVIDUAL SPECIES PATTERNS (Supplementary Table 1)
 # *************************************************************
 source('functions/isp_functions.r')
 taxa_names <- c("dicots", "monocots", "ferns", "conifers", "birds", "insects", "reptiles", "amphibians", "mammals", "gastropods")
