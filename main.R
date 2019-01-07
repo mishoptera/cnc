@@ -17,7 +17,7 @@ library(ggpubr)
 library(stringr)
 
 # load files
-load('data/all)_inat.Rdata')
+load('data/all_inat.Rdata')
 load('data/cities.Rdata')
 
 # source files
@@ -63,7 +63,7 @@ ggmap(map) +
   geom_text_repel(data = cities, aes(x = lon, y = lat, label = official_hometown))
 
 # Save it for export
-ggsave("figures_n_tables/cnc_map.tiff", width = 20, height = 15, units = "cm")
+ggsave("figures_n_tables/cnc_map.png", width = 20, height = 15, units = "cm")
 
 
 # *************************************************************
@@ -297,14 +297,9 @@ big_over4cities <- big_everything %>%
 big_over100obs <- big_everything %>%
   filter(count>=100)
 
-write.csv(big_everything, "figures_n_tables/big_everything.csv")
-write.csv(big_over100obs, "figures_n_tables/big_over100obs.csv")    # Table 4
-write.csv(big_top10s, "figures_n_tables/big_top10s.csv")    # Table 4 alternative
-write.csv(big_over4cities, "figures_n_tables/big_over4cities.csv")    # Table 4 alternative
-
 
 # *************************************************************
-# CALCULATING AND PLOTTING SLOPES BASED ON CAM AND ARM
+# CALCULATING AND PLOTTING SLOPES BASED ON CAM AND ARM (Supplementary table)
 # *************************************************************
 
 # a function to calculate the slope of the n:d4 points!
@@ -321,6 +316,8 @@ slopes <- big_over100obs %>%
   mutate(slope_cam = get_slope(n,d1, d2, d3, d4)) %>%
   mutate(slope_arm = get_slope(n.mean,d1.mean, d2.mean, d3.mean, d4.mean)) %>%
   ungroup() 
+
+write.csv(slopes, "figures_n_tables/big_over100obs_slopes.csv") # Supplementary Table
 
 # plotting the cam slopes
 cam_labels_over <- slopes %>%
@@ -357,6 +354,6 @@ plot_arm
 plots <- ggarrange(plot_cam, plot_arm, labels = c("A", "B"), ncol = 1, nrow = 2)
 plots <- annotate_figure(plots,
                          top = text_grob("Biotic homogenization with urbanization intensity", face = "bold", size = 18))
-ggsave(plot = plots, filename = "figures_n_tables/bh_CAM_ARM.jpg", height = 24, width = 20, units = "cm")
+ggsave(plot = plots, filename = "figures_n_tables/bh_CAM_ARM.png", height = 24, width = 20, units = "cm")
 
 
