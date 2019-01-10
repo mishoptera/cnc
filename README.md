@@ -1,5 +1,5 @@
-# Exploring urban biodiversity patterns with citizen science data
-This repository contains all the data and scripts required to analyze 2016-2018 City Nature Challenge data for our paper, published here (tbd).
+# A citizen science approach to evaluating US cities for biotic homogenization
+This repository contains all the data and scripts required to analyze 2016-2018 City Nature Challenge data for our paper. It is currently in review, and the preprint is available [here](https://peerj.com/preprints/27472v1/).
 
 ## Why?
 Urban biodiversity can be surprisingly challenging to study because of the high variance of urban features both within and between cities, access to private property, and the constraints in collecting sufficient data to capture this diversity. One promising solution is capitalizing on the rapidly growing availability of citizen science data through the iNaturalist platform. For this project we used data collected during the annual City Nature Challenge bioblitz to investigate how urban intensification impacts biodiversity.
