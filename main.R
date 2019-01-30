@@ -23,6 +23,10 @@ load('data/cities.Rdata')
 # source files
 source('functions/isp_functions.r')
 source('functions/cc_functions.r')
+source('functions/keys.R')
+
+# keys
+register_google(key = personal_google_api_key) 
 
 # adding taxon labels
 all_inat <- all_inat %>%
