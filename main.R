@@ -345,7 +345,7 @@ arm_labels_over <- slopes %>%
 arm_labels_under <- slopes %>%
   filter(slope_arm > 0 ) %>%
   filter(num_cities>7)
-plot_arm <- ggplot(data=arm_slopes,aes(x=num_cities,y=slope_arm, colour=taxon))+
+plot_arm <- ggplot(data=slopes,aes(x=num_cities,y=slope_arm, colour=taxon))+
   geom_point() + 
   geom_text_repel(data = arm_labels_over, aes(x=num_cities, y=slope_arm, label = common_name)) + 
   geom_text_repel(data = arm_labels_under, aes(x=num_cities, y=slope_arm, label = common_name)) + 
