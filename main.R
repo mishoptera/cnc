@@ -331,7 +331,7 @@ cam_labels_under <- slopes %>%
   filter(slope_cam < -1) %>%
   filter(num_cities>7)
 plot_cam <- ggplot(data=slopes,aes(x=num_cities,y=slope_cam, colour=taxon))+
-  geom_point() + 
+  geom_point(position = "jitter") + 
   labs(title = "evaluated with City Aggregation Metric", x = "number of cities", y = "slope of CAM") +
   geom_text_repel(data = cam_labels_over, aes(x=num_cities, y=slope_cam, label = common_name)) + 
   geom_text_repel(data = cam_labels_under, aes(x=num_cities, y=slope_cam, label = common_name)) + 
@@ -346,7 +346,7 @@ arm_labels_under <- slopes %>%
   filter(slope_arm > 0 ) %>%
   filter(num_cities>7)
 plot_arm <- ggplot(data=slopes,aes(x=num_cities,y=slope_arm, colour=taxon))+
-  geom_point() + 
+  geom_point(position = "jitter") + 
   geom_text_repel(data = arm_labels_over, aes(x=num_cities, y=slope_arm, label = common_name)) + 
   geom_text_repel(data = arm_labels_under, aes(x=num_cities, y=slope_arm, label = common_name)) + 
   labs(title = "evaluated with Averaged Ranking Metric", x = "number of cities", y = "slope of ARM") +
