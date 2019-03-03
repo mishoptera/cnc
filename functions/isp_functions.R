@@ -194,7 +194,7 @@ small_table3 <- function(big_table) {
 
 
 # *************************************************************
-# FUNCTIONS FOR AVERAGED RANKING METRIC
+# FUNCTION FOR AVERAGED RANKING METRIC
 # *************************************************************
 
 small_table <- function(big_table) {
@@ -215,7 +215,7 @@ small_table <- function(big_table) {
 
 
 # *************************************************************
-# FUNCTIONS TO COMBINE INTO ONE MAIN TABLE
+# FUNCTION TO COMBINE INTO ONE MAIN TABLE
 # *************************************************************
 bigify <- function(cam, arm, i){
   cam %>%
@@ -227,7 +227,7 @@ bigify <- function(cam, arm, i){
 # *************************************************************
 # ADDITIONAL RELEVANT FUNCTIONS
 # *************************************************************
-# Table for Michelle (top 10 for each city, for plants and animals)
+# ////// Table for Michelle (top 10 for each city, for plants and animals)
 top10 <- function (city, taxon) {
   taxon %>%
     filter(hometown == city) %>%
@@ -265,7 +265,7 @@ top10_knit <- function(taxon) {
 }
 
 
-# a function to calculate the slope of the n:d4 points!
+# //////// a function to calculate the slope of the n:d4 points!
   get_slope <- function(n, d1, d2, d3, d4) { 
     x <- c(1:5)
     y <- c(n, d1, d2, d3, d4)
