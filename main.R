@@ -303,16 +303,8 @@ big_over100obs <- big_everything %>%
 
 
 # *************************************************************
-# CALCULATING AND PLOTTING SLOPES BASED ON CAM AND ARM (Supplementary table)
+# CALCULATING AND PLOTTING SLOPES BASED ON CAM AND ARM (Supplementary table and Figure 5)
 # *************************************************************
-
-# a function to calculate the slope of the n:d4 points!
-get_slope <- function(n, d1, d2, d3, d4) { 
-  x <- c(1:5)
-  y <- c(n, d1, d2, d3, d4)
-  slope_result <- lm(y~x, na.action=na.exclude)$coeff[[2]]
-  return(slope_result)
-}
 
 # creating a table of the arm and cam slopes
 slopes <- big_over100obs %>%
