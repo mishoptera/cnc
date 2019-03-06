@@ -310,7 +310,10 @@ big_over100obs <- big_everything %>%
 slopes <- big_over100obs %>%
   rowwise() %>%  #this is such an important thing!!!
   mutate(slope_cam = get_slope(n,d1, d2, d3, d4)) %>%
+  mutate(pvalue_cam = get_pvalue(n,d1, d2, d3, d4)) %>%
   mutate(slope_arm = get_slope(n.mean,d1.mean, d2.mean, d3.mean, d4.mean)) %>%
+  mutate(pvalue_arm = get_pvalue(n.mean,d1.mean, d2.mean, d3.mean, d4.mean)) %>%
+  filter(pvalue_arm <0.05)
   ungroup() 
 
 write.csv(slopes, "figures_n_tables/big_over100obs_slopes.csv") # Supplementary Table
