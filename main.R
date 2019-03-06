@@ -313,7 +313,6 @@ slopes <- big_over100obs %>%
   mutate(pvalue_cam = get_pvalue(n,d1, d2, d3, d4)) %>%
   mutate(slope_arm = get_slope(n.mean,d1.mean, d2.mean, d3.mean, d4.mean)) %>%
   mutate(pvalue_arm = get_pvalue(n.mean,d1.mean, d2.mean, d3.mean, d4.mean)) %>%
-  filter(pvalue_arm <0.05)
   ungroup() 
 
 write.csv(slopes, "figures_n_tables/big_over100obs_slopes.csv") # Supplementary Table
@@ -325,11 +324,12 @@ cam_labels_over <- slopes %>%
 cam_labels_under <- slopes %>%
   filter(slope_cam < -1) %>%
   filter(num_cities>7)
+cam_labels_sig <- slopes %>%
+  filter(pvalue_arm < 0.05)
 plot_cam <- ggplot(data=slopes,aes(x=num_cities,y=slope_cam, colour=taxon))+
   geom_point(position = "jitter") + 
   labs(title = "Evaluated with City Aggregation Metric", x = "Number of cities", y = "Slope of CAM") +
-  geom_text_repel(data = cam_labels_over, aes(x=num_cities, y=slope_cam, label = common_name)) + 
-  geom_text_repel(data = cam_labels_under, aes(x=num_cities, y=slope_cam, label = common_name)) + 
+  geom_text_repel(data = cam_labels_sig, aes(x=num_cities, y=slope_cam, label = common_name)) + 
   theme_bw() 
 plot_cam
 
