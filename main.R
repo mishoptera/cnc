@@ -318,14 +318,8 @@ slopes <- big_over100obs %>%
 write.csv(slopes, "figures_n_tables/big_over100obs_slopes.csv") # Supplementary Table
 
 # plotting the cam slopes
-cam_labels_over <- slopes %>%
-  filter(slope_cam >0) %>%
-  filter(num_cities>7)
-cam_labels_under <- slopes %>%
-  filter(slope_cam < -1) %>%
-  filter(num_cities>7)
 cam_labels_sig <- slopes %>%
-  filter(pvalue_arm < 0.05)
+  filter(pvalue_cam < 0.05)
 plot_cam <- ggplot(data=slopes,aes(x=num_cities,y=slope_cam, colour=taxon))+
   geom_point(position = "jitter") + 
   labs(title = "Evaluated with City Aggregation Metric", x = "Number of cities", y = "Slope of CAM") +
@@ -334,16 +328,11 @@ plot_cam <- ggplot(data=slopes,aes(x=num_cities,y=slope_cam, colour=taxon))+
 plot_cam
 
 # plotting the arm slopes
-arm_labels_over <- slopes %>%
-  filter(slope_arm < -2) %>%
-  filter(num_cities>7)
-arm_labels_under <- slopes %>%
-  filter(slope_arm > 0 ) %>%
-  filter(num_cities>7)
+arm_labels_sig <- slopes %>%
+  filter(pvalue_arm < 0.05)
 plot_arm <- ggplot(data=slopes,aes(x=num_cities,y=slope_arm, colour=taxon))+
   geom_point(position = "jitter") + 
-  geom_text_repel(data = arm_labels_over, aes(x=num_cities, y=slope_arm, label = common_name)) + 
-  geom_text_repel(data = arm_labels_under, aes(x=num_cities, y=slope_arm, label = common_name)) + 
+  geom_text_repel(data = arm_labels_sig, aes(x=num_cities, y=slope_cam, label = common_name)) + 
   labs(title = "Evaluated with Averaged Ranking Metric", x = "Number of cities", y = "Slope of ARM") +
   theme_bw()+
   scale_y_reverse(lim=c(8, -8))
