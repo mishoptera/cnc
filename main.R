@@ -332,7 +332,7 @@ arm_labels_sig <- slopes %>%
   filter(pvalue_arm < 0.05)
 plot_arm <- ggplot(data=slopes,aes(x=num_cities,y=slope_arm, colour=taxon))+
   geom_point(position = "jitter") + 
-  geom_text_repel(data = arm_labels_sig, aes(x=num_cities, y=slope_cam, label = common_name)) + 
+  geom_text_repel(data = arm_labels_sig, aes(x=num_cities, y=slope_arm, label = common_name)) + 
   labs(title = "Evaluated with Averaged Ranking Metric", x = "Number of cities", y = "Slope of ARM") +
   theme_bw()+
   scale_y_reverse(lim=c(8, -8))
