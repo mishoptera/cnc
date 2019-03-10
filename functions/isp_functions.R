@@ -225,9 +225,8 @@ bigify <- function(cam, arm, i){
 
 
 # *************************************************************
-# ADDITIONAL RELEVANT FUNCTIONS
+# FUNCTION TO CREATE AND KNIT TOGETHER TOP 10 LISTS FOR EACH CITY
 # *************************************************************
-# ////// Table for Michelle (top 10 for each city, for plants and animals)
 top10 <- function (city, taxon) {
   taxon %>%
     filter(hometown == city) %>%
@@ -265,7 +264,9 @@ top10_knit <- function(taxon) {
 }
 
 
-# //////// a function to calculate the slope of the n:d4 points!
+# *************************************************************
+# FUNCTIONS TO CALCULATE SLOPES AND SIGNIFICANCE
+# *************************************************************
   get_slope <- function(n, d1, d2, d3, d4) { 
     x <- c(1:5)
     y <- c(n, d1, d2, d3, d4)
