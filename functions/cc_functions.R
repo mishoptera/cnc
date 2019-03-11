@@ -136,7 +136,7 @@ plot_cc_us <- function (all_matrix, all_env, title) {
   plots <- ggarrange(lc, cg, labels = c("A", "B"), ncol = 1, nrow = 2)
   plots <- annotate_figure(plots,
                            top = text_grob(title, face = "bold", size = 18))
-  filename <- paste("figures_n_tables/cc_us_", title, ".jpg", sep = "")
+  filename <- paste("figures_n_tables/cc_us_", title, ".png", sep = "")
   ggsave(plot = plots, filename = filename, height = 20, width = 24, units = "cm")
 }
 
@@ -203,7 +203,7 @@ plot_cc_region_4 <- function (taxon, title) {
   
   regions <- ggarrange(texas, atlantic, pacific, central, labels = c("A", "B", "C", "D"), ncol = 2, nrow = 2)
   regions <- annotate_figure(regions, top = text_grob(title, face = "bold", size = 18))
-  filename <- paste("figures_n_tables/cc_region_", title, ".jpg", sep = "")
+  filename <- paste("figures_n_tables/cc_region_", title, ".png", sep = "")
   ggsave(plot = regions, filename = filename, height = 20, width = 24, units = "cm")
 }
 
@@ -375,7 +375,7 @@ plot_cc_region_species <- function (taxa, title) {
           panel.grid.minor = element_blank(),  #remove minor-grid labels
           plot.background = element_blank())
   
-  filename <- paste("figures_n_tables/cc_region_", title, ".jpg", sep = "")
+  filename <- paste("figures_n_tables/cc_region_", title, ".png", sep = "")
   ggsave(plot = all, filename = filename, height = 40, width = 40, units = "cm")
   
 }
