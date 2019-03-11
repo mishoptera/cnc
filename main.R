@@ -49,6 +49,14 @@ all_inat$scientific_name <- as.factor(all_inat$scientific_name)
 plants <- all_inat %>% filter(taxon_class_name %in% c("Magnoliopsida", "Liliopsida", "Polypodiopsida", "Pinopsida", "Agaricomycetes", "Lecanoromycetes"))
 animals <- all_inat %>% filter(taxon_class_name %in% c("Arachnida", "Aves", "Gastropoda", "Insecta", "Amphibia", "Reptilia", "Mammalia"))
 
+# to answer reviewer question about what species are "other"
+all_inat %>% 
+  filter (taxon == "other") %>%
+  group_by (taxon_class_name, scientific_name) %>%
+  summarise (num_obs = n_distinct (id)) %>%
+  arrange (desc(num_obs))
+
+  
 # *************************************************************
 # MAP OF CNC CITIES (Figure 1)
 # *************************************************************
