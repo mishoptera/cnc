@@ -246,7 +246,7 @@ adonis_cc <- function (all_matrix) {
 # Assemble table of PERMANOVA analyses no nesting
 adonis.table <- function(lc_subset) {
   cc <- cc_matrix(lc_subset)
-  perm <- adonis_ccn(cc)
+  perm <- adonis_cc(cc)
   r2 <- adonis_r2(perm)
   p <- adonis_p(perm)
   
