@@ -231,6 +231,32 @@ adonis_cc_lc <- function (all_matrix) {
   return (lc_perm)
 }
 
+# PERMANOVA analysis no nestedness (only interested in how similar cities are to one another
+# because we are feeding in land cover subsets from the get go. The idea being that high intensity
+# land cover subsets will have cities that are more similar to one another than the natural
+# land cover subsets)
+adonis_cc <- function (all_matrix) {
+  all_env <- cc_env(all_matrix)
+  mod_all <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
+  perm <- adonis(all_matrix ~ all_env$hometown, data = all_env, permutations = 999)
+  return (perm)
+}
+
+# ////////////////////
+# Assemble table of PERMANOVA analyses no nesting
+adonis.table <- function(lc_subset) {
+  cc <- cc_matrix(lc_subset)
+  perm <- adonis_ccn(cc)
+  r2 <- adonis_r2(perm)
+  p <- adonis_p(perm)
+  
+  adonis_table <- tribble(
+    ~Region, ~R2,  ~p,
+    "All USA", r2, usa_p
+  )
+  print(adonis_table)
+}
+
 # ////////////////////
 # Assemble table of PERMANOVA analyses nested by hometown
 adonis.table.hometown <- function(taxon) {
