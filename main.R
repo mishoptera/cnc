@@ -248,11 +248,31 @@ write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 4
 # Create a table of PERMANOVA results of filtered observations of increasing urban intensity
 # to see if there is less explanation by region as we increase urbanization intensity (nesting
 # is by hometown because we are only interested in how landcover explanations change)
+# how many observation per land cover type?
+all_inat %>%
+  group_by(nlcd_group2) %>%
+  summarise (num_obs = n_distinct (id)) 
+
 source('functions/cc_functions.r')
-tab_natural <- adonis.table(all_inat %>% filter (nlcd_group2 == "natural")) %>% 
+tab_all <- adonis.table(all_inat) %>% 
+  mutate (urban_intensity = "all")
+tab_open_to_high <- adonis.table(all_inat %>% filter (nlcd_group != "natural")) %>% 
+  mutate (urban_intensity = "open space to high intensity")
+tab_low_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("developed2_low_intensity", 
+                                                                        "developed3_medium_intensity",
+                                                                        "developed4_high_intensity"))) %>% 
+  mutate (urban_intensity = "low to high intensity")
+tab_medium_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("developed3_medium_intensity",
+                                                                        "developed4_high_intensity"))) %>% 
+  mutate (urban_intensity = "medium to high intensity")
+tab <- bind_rows(tab_all, tab_open_to_high, tab_low_to_high, tab_medium_to_high)
+tab
+
+
+tab_natural <- adonis.table(all_inat %>% filter (nlcd_group == "natural")) %>% 
   mutate (urban_intensity = "natural")
-tab_open_low <- adonis.table(all_inat %>% filter (nlcd_group == "developed_open_low")) %>% 
-  mutate (urban_intensity = "open space to low intensity")
+tab_not_natural <- adonis.table(all_inat %>% filter (nlcd_group != "natural")) %>% 
+  mutate (urban_intensity = "open space to high intensity")
 tab_low <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed2_low_intensity")) %>% 
   mutate (urban_intensity = "low intensity")
 tab_medium <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed3_medium_intensity")) %>% 
