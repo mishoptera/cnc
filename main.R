@@ -256,30 +256,30 @@ all_inat %>%
 source('functions/cc_functions.r')
 tab_all <- adonis.table(all_inat) %>% 
   mutate (urban_intensity = "all")
+tab_natural <- adonis.table(all_inat %>% filter (nlcd_group2 == "natural")) %>% 
+  mutate (urban_intensity = "natural")
 tab_open_to_high <- adonis.table(all_inat %>% filter (nlcd_group != "natural")) %>% 
-  mutate (urban_intensity = "open space to high intensity")
+  mutate (urban_intensity = "developed (open space to high intensity)")
+tab_low_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("developed2_low_intensity", 
+                                                                        "developed3_medium_intensity",
+                                                                        "developed4_high_intensity"))) %>% 
+  mutate (urban_intensity = "developed (low to high intensity)")
+tab_medium_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("developed3_medium_intensity",
+                                                                        "developed4_high_intensity"))) %>% 
+  mutate (urban_intensity = "developed (medium to high intensity)")
+tab <- bind_rows(tab_natural, tab_open_to_high, tab_low_to_high, tab_medium_to_high)
+tab
+
+
+tab_natural <- adonis.table(all_inat %>% filter (nlcd_group2 == "natural")) %>% 
+  mutate (urban_intensity = "natural")
+tab_open <- adonis.table(all_inat %>% filter (nlcd_group2 != "developed1_open_space")) %>% 
+  mutate (urban_intensity = "open space")
 tab_low_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("developed2_low_intensity", 
                                                                         "developed3_medium_intensity",
                                                                         "developed4_high_intensity"))) %>% 
   mutate (urban_intensity = "low to high intensity")
-tab_medium_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("developed3_medium_intensity",
-                                                                        "developed4_high_intensity"))) %>% 
-  mutate (urban_intensity = "medium to high intensity")
-tab <- bind_rows(tab_all, tab_open_to_high, tab_low_to_high, tab_medium_to_high)
-tab
-
-
-tab_natural <- adonis.table(all_inat %>% filter (nlcd_group == "natural")) %>% 
-  mutate (urban_intensity = "natural")
-tab_not_natural <- adonis.table(all_inat %>% filter (nlcd_group != "natural")) %>% 
-  mutate (urban_intensity = "open space to high intensity")
-tab_low <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed2_low_intensity")) %>% 
-  mutate (urban_intensity = "low intensity")
-tab_medium <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed3_medium_intensity")) %>% 
-  mutate (urban_intensity = "medium intensity")
-tab_high <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed4_high_intensity")) %>% 
-  mutate (urban_intensity = "high intensity")
-tab <- bind_rows(tab_natural, tab_open, tab_low, tab_medium, tab_high)
+tab <- bind_rows(tab_natural, tab_open, tab_low_to_high)
 tab
 write.csv(tab, "figures_n_tables/permanova_results_urbanIntensity.csv")       # Table 5
 
