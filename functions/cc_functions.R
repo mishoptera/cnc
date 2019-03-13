@@ -249,10 +249,11 @@ adonis.table <- function(lc_subset) {
   perm <- adonis_cc(cc)
   r2 <- adonis_r2(perm)
   p <- adonis_p(perm)
+  AIC <- adonis_aic(perm)
   
   adonis_table <- tribble(
-    ~R2,  ~p,
-    r2, p
+    ~R2,  ~p, ~AIC,
+    r2, p, AIC
   )
   print(adonis_table)
 }
