@@ -262,28 +262,43 @@ all_inat %>%
 all_inat %>%
   group_by(region) %>%
   summarise (num_obs = n_distinct (id)) 
+all_inat2 <- all_inat
+lc_groups <- tribble(
+  ~nlcd_group2,  ~nlcd_group3,
+  "natural", "natural",
+  "developed1_open_space", "developed1_open_space",
+  "developed2_low_intensity", "d2-d4",
+  "developed3_medium_intensity", "d2-d4",
+  "developed4_high_intensity", "d2-d4"
+)
+all_inat2 <- all_inat %>%
+  left_join(lc_groups, by = "nlcd_group2")
 
 source('functions/cc_functions.r')
-tab_all <- adonis.table(plants) %>% 
+
+tab_all <- adonis.table(all_inat2) %>% 
   mutate (urban_intensity = "all")
-tab_natural <- adonis.table(plants %>% filter (nlcd_group2 == "natural")) %>% 
+tab_natural <- adonis.table(all_inat2 %>% filter (nlcd_group3 == "natural")) %>% 
   mutate (urban_intensity = "natural")
-
-tab_os <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed1_open_space")) %>% 
+tab_os <- adonis.table(all_inat2 %>% filter (nlcd_group3 == "developed1_open_space")) %>% 
   mutate (urban_intensity = "developed - open space")
-tab_l <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed2_low_intensity")) %>% 
+tab_2 <- adonis.table(all_inat2 %>% filter (nlcd_group3 == "developed2_low_intensity")) %>% 
   mutate (urban_intensity = "developed - low intensity")
-tab_os <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed1_open_space")) %>% 
-  mutate (urban_intensity = "developed - open space")
-tab_os <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed1_open_space")) %>% 
-  mutate (urban_intensity = "developed - open space")
+tab_3 <- adonis.table(all_inat2 %>% filter (nlcd_group3 == "developed3_medium_intensity")) %>% 
+  mutate (urban_intensity = "developed - medium intensity")
+tab_4 <- adonis.table(all_inat2 %>% filter (nlcd_group3 == "developed4_high_intensity")) %>% 
+  mutate (urban_intensity = "developed - high intensity")
+tab_2to4 <- adonis.table(all_inat2 %>% filter (nlcd_group3 == "d2-d4")) %>% 
+  mutate (urban_intensity = "developed - low to high")
+tab <- bind_rows(tab_natural, tab_os, tab_2, tab_3, tab_4, tab_2to4)
+tab
 
 
 
 
-tab_open_to_high <- adonis.table(plants %>% filter (nlcd_group != "natural")) %>% 
+tab_open_to_high <- adonis.table(all_inat %>% filter (nlcd_group != "natural")) %>% 
   mutate (urban_intensity = "developed (open space to high intensity)")
-tab_low_to_high <- adonis.table(plants %>% filter (nlcd_group2 %in% c("developed2_low_intensity", 
+tab_low_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("developed2_low_intensity", 
                                                                         "developed3_medium_intensity",
                                                                         "developed4_high_intensity"))) %>% 
   mutate (urban_intensity = "developed (low to high intensity)")
