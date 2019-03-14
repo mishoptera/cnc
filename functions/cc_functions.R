@@ -212,25 +212,6 @@ plot_cc_region_4 <- function (taxon, title) {
 # PERMANOVA ANALYSES
 # *************************************************************
 
-# ////////////////////
-# PERMANOVA analysis nested by hometown
-adonis_cc_hometown <- function (all_matrix) {
-  all_env <- cc_env(all_matrix)
-  mod_all <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
-  lc_perm <- adonis(all_matrix ~ all_env$landcover_group, data = all_env, 
-                    strata= all_env$hometown, permutations = 999)
-  return (lc_perm)
-}
-
-# PERMANOVA analysis nested by land cover type
-adonis_cc_lc <- function (all_matrix) {
-  all_env <- cc_env(all_matrix)
-  mod_all <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
-  lc_perm <- adonis(all_matrix ~ all_env$hometown, data = all_env, 
-                    strata= all_env$landcover_group, permutations = 999)
-  return (lc_perm)
-}
-
 # PERMANOVA analysis no nestedness (only interested in how similar cities are to one another
 # because we are feeding in land cover subsets from the get go. The idea being that high intensity
 # land cover subsets will have cities that are more similar to one another than the natural
@@ -258,85 +239,7 @@ adonis.table <- function(lc_subset) {
   print(adonis_table)
 }
 
-# ////////////////////
-# Assemble table of PERMANOVA analyses nested by hometown
-adonis.table.hometown <- function(taxon) {
-  cc_usa <- cc_matrix(taxon)
-  usa_perm <- adonis_cc_hometown(cc_usa)
-  usa_r2 <- adonis_r2(usa_perm)
-  usa_p <- adonis_p(usa_perm)
-  
-  cc_texas <- cc_matrix(taxon %>% filter(hometown %in% c("houston", "dallas", "austin")))
-  texas_perm <- adonis_cc_hometown(cc_texas)
-  texas_r2 <- adonis_r2(texas_perm)
-  texas_p <- adonis_p(texas_perm)
-  
-  cc_atlantic <- cc_matrix(taxon %>% filter(hometown %in% c("boston", "newyork", "washingtondc")))
-  atlantic_perm <- adonis_cc_hometown(cc_atlantic)
-  atlantic_r2 <- adonis_r2(atlantic_perm)
-  atlantic_p <- adonis_p(atlantic_perm)
-  
-  cc_pacific <- cc_matrix(taxon %>% filter(hometown %in% c("sanfrancisco", "losangeles", "seattle")))
-  pacific_perm <- adonis_cc_hometown(cc_pacific)
-  pacific_r2 <- adonis_r2(pacific_perm)
-  pacific_p <- adonis_p(pacific_perm)
-  
-  cc_central <- cc_matrix(taxon %>% filter(hometown %in% c("saltlakecity", "minneapolis", "chicago")))
-  central_perm <- adonis_cc_hometown(cc_central)
-  central_r2 <- adonis_r2(central_perm)
-  central_p <- adonis_p(central_perm)
-  
-  adonis_table <- tribble(
-    ~Region, ~R2,  ~p,
-    "All USA", usa_r2, usa_p,
-    "Texas", texas_r2,  texas_p,
-    "Atlantic", atlantic_r2,  atlantic_p,
-    "Pacific", pacific_r2, pacific_p,
-    "Central", central_r2, central_p
-  )
-  print(adonis_table)
-  
-}
 
-# ////////////////////
-# Assemble table of PERMANOVA analyses nested by landcover type
-adonis.table.lc <- function(taxon) {
-  cc_usa <- cc_matrix(taxon)
-  usa_perm <- adonis_cc_lc(cc_usa)
-  usa_r2 <- adonis_r2(usa_perm)
-  usa_p <- adonis_p(usa_perm)
-  
-  cc_texas <- cc_matrix(taxon %>% filter(hometown %in% c("houston", "dallas", "austin")))
-  texas_perm <- adonis_cc_lc(cc_texas)
-  texas_r2 <- adonis_r2(texas_perm)
-  texas_p <- adonis_p(texas_perm)
-  
-  cc_atlantic <- cc_matrix(taxon %>% filter(hometown %in% c("boston", "newyork", "washingtondc")))
-  atlantic_perm <- adonis_cc_lc(cc_atlantic)
-  atlantic_r2 <- adonis_r2(atlantic_perm)
-  atlantic_p <- adonis_p(atlantic_perm)
-  
-  cc_pacific <- cc_matrix(taxon %>% filter(hometown %in% c("sanfrancisco", "losangeles", "seattle")))
-  pacific_perm <- adonis_cc_lc(cc_pacific)
-  pacific_r2 <- adonis_r2(pacific_perm)
-  pacific_p <- adonis_p(pacific_perm)
-  
-  cc_central <- cc_matrix(taxon %>% filter(hometown %in% c("saltlakecity", "minneapolis", "chicago")))
-  central_perm <- adonis_cc_lc(cc_central)
-  central_r2 <- adonis_r2(central_perm)
-  central_p <- adonis_p(central_perm)
-  
-  adonis_table <- tribble(
-    ~Region, ~R2,  ~p,
-    "All USA", usa_r2, usa_p,
-    "Texas", texas_r2,  texas_p,
-    "Atlantic", atlantic_r2,  atlantic_p,
-    "Pacific", pacific_r2, pacific_p,
-    "Central", central_r2, central_p
-  )
-  print(adonis_table)
-  
-}
 
 # ////////////////////
 # Extract R2
@@ -355,62 +258,6 @@ adonis_p <- function (perm) {
 adonis_aic <- function (perm) {
   aic  <- AICc.PERMANOVA(perm)
   return(aic$AIC)
-}
-
-# ////////////////////////////////////////
-# Plotting with species names on a regional scale. Still worth including?
-plot_cc_region_species <- function (taxa, title) {
-  all_matrix <- cc_matrix_commonnames(taxa)
-  all_env <- cc_env(all_matrix)
-  mod_all <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
-  data_scores <- as.data.frame(scores(mod_all)) 
-  data_scores$hometown <- as.factor(all_env$hometown)
-  data_scores$landcover <- all_env$landcover_group
-  stress <- signif(mod_all$stress, digits = 3)
-  species_scores <- as.data.frame(scores(mod_all, "species"))
-  species_scores$common_name <- rownames(species_scores)
-  species_scores_subset <- species_scores %>%
-    left_join(big_everything, by = "common_name") %>%
-    filter(count>=10) %>%
-    select(NMDS1, NMDS2, common_name)
-  subtitle <- paste("2-D Stress =", stress)
-  cities <- select(cities, c(hometown, lat, lon, region, official_hometown))
-  data_scores <- left_join(data_scores, cities, by = "hometown")
-  nice_lc <- tibble(landcover = c("natural", "developed1_open_space", 
-                                  "developed2_low_intensity", "developed3_medium_intensity", "developed4_high_intensity"), 
-                    urbanization = c("0 - natural", "1 - open space", "2 - low intensity", 
-                                     "3 - medium intensity", "4 - high intensity"))
-  data_scores_natural <- data_scores %>% filter(landcover=="natural")
-  data_scores <- left_join(data_scores, nice_lc, by = "landcover")
-  data_scores_d4<- data_scores %>% filter(landcover=="developed4_high_intensity")
-  
-  all <- ggplot() +
-    geom_point(data=data_scores, aes(x = NMDS1, y = NMDS2, shape = official_hometown) ,size=3) + 
-    labs (shape = "Cities", fill = "Urbanization Levels", colour = "Urbanization Levels") +
-    stat_chull(data = data_scores, geom = "polygon", alpha = 0.1, aes(x = NMDS1, y = NMDS2, 
-                                                                      fill = urbanization, color=urbanization)) +
-    geom_text_repel(data=species_scores_subset,aes(x=NMDS1,y=NMDS2,label=common_name)) +
-    theme_bw() +
-    guides(colour = guide_legend(order = 2), 
-           fill = guide_legend(order = 2), 
-           shape = guide_legend(order = 1)) +
-    scale_shape_discrete(guide = FALSE) +
-    labs(title = title, subtitle = subtitle) +
-    coord_equal() +
-    theme(plot.title=element_text(size=20), 
-          axis.text.x = element_blank(),  # remove x-axis text
-          axis.text.y = element_blank(), # remove y-axis text
-          axis.ticks = element_blank(),  # remove axis ticks
-          axis.title.x = element_text(size=12), # remove x-axis labels
-          axis.title.y = element_text(size=12), # remove y-axis labels
-          panel.background = element_blank(), 
-          panel.grid.major = element_blank(),  #remove major-grid labels
-          panel.grid.minor = element_blank(),  #remove minor-grid labels
-          plot.background = element_blank())
-  
-  filename <- paste("figures_n_tables/cc_region_", title, ".png", sep = "")
-  ggsave(plot = all, filename = filename, height = 40, width = 40, units = "cm")
-  
 }
 
 # -----------------------
