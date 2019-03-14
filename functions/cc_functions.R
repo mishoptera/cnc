@@ -14,7 +14,7 @@
 cc_matrix <- function(taxon_data) {
   taxon_matrix <- taxon_data %>%
     unite(long_name, taxon_class_name, taxon_order_name, taxon_family_name, scientific_name, sep = ".", remove = FALSE) %>%
-    group_by(hometown, nlcd_group3, long_name) %>%
+    group_by(hometown, nlcd_group2, long_name) %>%
     summarise(obs = n()) %>%
     spread(long_name, obs, fill = 0) %>%
     as.data.frame()
@@ -31,7 +31,7 @@ cc_matrix <- function(taxon_data) {
 # more legible
 cc_matrix_commonnames <- function(taxon_data) {
   taxon_matrix <- taxon_data %>%
-    group_by(hometown, nlcd_group3, common_name) %>%
+    group_by(hometown, nlcd_group2, common_name) %>%
     summarise(obs = n()) %>%
     spread(common_name, obs, fill = 0) %>%
     as.data.frame()
