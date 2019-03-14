@@ -278,8 +278,13 @@ tab_3 <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed3_medium_int
 tab_4 <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed4_high_intensity")) %>% 
   mutate (urban_intensity = "developed - high intensity")
 tab <- bind_rows(tab_natural, tab_os, tab_2, tab_3, tab_4)
-tab
+return(tab)
 
+tab_all <- knit_tables(all_inat) %>% mutate (taxon = "all")
+tab_plants <- knit_tables(plants) %>% mutate (taxon = "plants")
+tab_animals <- knit_tables(animals) %>% mutate (taxon = "animals")
+tab <- bind_rows(tab_all, tab_plants, tab_animals) 
+tab
 
 
 
