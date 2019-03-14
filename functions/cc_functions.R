@@ -260,7 +260,24 @@ adonis_aic <- function (perm) {
   aic  <- AICc.PERMANOVA(perm)
   return(aic$AIC)
 }
-
+#////////////////////
+# knit tables
+knit_tables <- function(all_inat) {
+  tab_all <- adonis.table(all_inat) %>% 
+    mutate (urban_intensity = "all")
+  tab_natural <- adonis.table(all_inat %>% filter (nlcd_group2 == "natural")) %>% 
+    mutate (urban_intensity = "natural")
+  tab_os <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed1_open_space")) %>% 
+    mutate (urban_intensity = "developed - open space")
+  tab_2 <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed2_low_intensity")) %>% 
+    mutate (urban_intensity = "developed - low intensity")
+  tab_3 <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed3_medium_intensity")) %>% 
+    mutate (urban_intensity = "developed - medium intensity")
+  tab_4 <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed4_high_intensity")) %>% 
+    mutate (urban_intensity = "developed - high intensity")
+  tab <- bind_rows(tab_natural, tab_os, tab_2, tab_3, tab_4)
+  return(tab)
+}
 # -----------------------
 ## R Script from https://github.com/kdyson/R_Scripts/blob/master/AICc_PERMANOVA.R
 
