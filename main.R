@@ -217,12 +217,12 @@ source('functions/cc_functions.r')
 cc_all <- cc_matrix(all_inat)
 cc_all_env <- cc_env(cc_all)
 plot_cc_us(cc_all, cc_all_env, "All taxa")          # Figure 2
-plot_cc_region_4(all_inat, "All taxa")             # Figure 4
+plot_cc_region_4(all_inat, "All taxa")             # Figure 3
 
 # All Plants
 cc_plants <- cc_matrix(plants) 
 cc_plants_env <- cc_env(cc_plants)
-plot_cc_us(cc_plants, cc_plants_env, "Plants")      # Figure 3
+plot_cc_us(cc_plants, cc_plants_env, "Plants")      # supplentary now?
 plot_cc_region_4(plants, "Plants")
 
 # All Animals
@@ -231,19 +231,21 @@ cc_animals_env <- cc_env(cc_animals)
 plot_cc_us(cc_animals, cc_animals_env, "Animals")
 plot_cc_region_4(animals, "Animals")
 
+
+# THE FOLLOWING MIGHT BE UNNECESSARY IN LIGHT OF THE NEW USE OF PERMANOVA TESTS.
 # Create a table of PERMANOVA results for all taxa in all regions, nested by hometown.
 tab_all <- adonis.table.hometown(all_inat) %>% mutate (taxon = "all")
 tab_plants <- adonis.table.hometown(plants) %>% mutate (taxon = "plants")
 tab_animals <- adonis.table.hometown(animals) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "figures_n_tables/permanova_results_hometown.csv")       # Table 3
+write.csv(tab, "figures_n_tables/permanova_results_hometown.csv") 
 
 # Create a table of PERMANOVA results for all taxa in all regions, nested by land cover type.
 tab_all <- adonis.table.lc(all_inat) %>% mutate (taxon = "all")
 tab_plants <- adonis.table.lc(plants) %>% mutate (taxon = "plants")
 tab_animals <- adonis.table.lc(animals) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "figures_n_tables/permanova_results_lc.csv")       # Table 4
+write.csv(tab, "figures_n_tables/permanova_results_lc.csv")    
 
 # Create a table of PERMANOVA results of filtered observations of increasing urban intensity
 # to see if there is less explanation by region as we increase urbanization intensity (nesting
@@ -269,19 +271,8 @@ tab_medium_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("deve
   mutate (urban_intensity = "developed (medium to high intensity)")
 tab <- bind_rows(tab_natural, tab_open_to_high, tab_low_to_high, tab_medium_to_high)
 tab
+write.csv(tab, "figures_n_tables/permanova_results_urban intensity.csv")       # Table 3
 
-
-tab_natural <- adonis.table(all_inat %>% filter (nlcd_group2 == "natural")) %>% 
-  mutate (urban_intensity = "natural")
-tab_open <- adonis.table(all_inat %>% filter (nlcd_group2 != "developed1_open_space")) %>% 
-  mutate (urban_intensity = "open space")
-tab_low_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("developed2_low_intensity", 
-                                                                        "developed3_medium_intensity",
-                                                                        "developed4_high_intensity"))) %>% 
-  mutate (urban_intensity = "low to high intensity")
-tab <- bind_rows(tab_natural, tab_open, tab_low_to_high)
-tab
-write.csv(tab, "figures_n_tables/permanova_results_urbanIntensity.csv")       # Table 5
 
 
 # *************************************************************
