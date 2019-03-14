@@ -218,8 +218,8 @@ plot_cc_region_4 <- function (taxon, title) {
 # land cover subsets)
 # need to reevaluate how I'm creating these matrices and getting environmental variables set-up
 adonis_cc <- function (all_matrix) {
-  all_env <- cc_env(all_matrix)
-  mod_all <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
+  all_env <- cc_env(all_matrix) %>%
+    left_join(cities, by = "hometown")
   perm <- adonis(all_matrix ~ all_env$region, data = all_env, permutations = 999)
   return (perm)
 }
