@@ -216,10 +216,11 @@ plot_cc_region_4 <- function (taxon, title) {
 # because we are feeding in land cover subsets from the get go. The idea being that high intensity
 # land cover subsets will have cities that are more similar to one another than the natural
 # land cover subsets)
+# need to reevaluate how I'm creating these matrices and getting environmental variables set-up
 adonis_cc <- function (all_matrix) {
   all_env <- cc_env(all_matrix)
   mod_all <- metaMDS(all_matrix, distance = "bray", k = 2, try = 100, trymax = 500)
-  perm <- adonis(all_matrix ~ all_env$hometown, data = all_env, permutations = 999)
+  perm <- adonis(all_matrix ~ all_env$region, data = all_env, permutations = 999)
   return (perm)
 }
 
