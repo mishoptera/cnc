@@ -292,6 +292,13 @@ tab_medium_to_high <- adonis.table(animals %>% filter (nlcd_group2 %in% c("devel
   mutate (urban_intensity = "developed (medium to high intensity)")
 tab <- bind_rows(tab_natural, tab_open_to_high, tab_low_to_high, tab_medium_to_high)
 tab
+# Realized a mistake.  The table of decreasing AIC scores was not telling me what I thought it was.
+# In fact, as AIC's went down with increasing urban intensity, the exact opposite of what we would
+# expect was happening. Community compositions were becoming MORE PREDICATABLE based on hometown!
+# I think the issue is that by including multiple land use categories, the sample size was increasing
+# so effect was artifiial (although still a lower AIC score from open to low to medium so not sure
+# what that's about.  Way around this is to subset by region perhaps.)
+
 write.csv(tab, "figures_n_tables/permanova_results_urban intensity.csv")       # Table 3
 
 
