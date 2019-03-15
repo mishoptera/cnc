@@ -18,7 +18,9 @@ library(stringr)
 
 # load files
 load('data/all_inat.Rdata')
-load('data/cities.Rdata')
+cities <- read.csv("city_data.csv")
+save(cities, file = "data/cities.RData") # needs to get worked out
+load('data/cities.RdData')
 
 # source files
 source('functions/isp_functions.r')
@@ -75,8 +77,9 @@ ggmap(map) +
 
 # Plot cities onto map with colors, sizes, and labels
 ggmap(map) +
-  geom_point(data = cities, aes(x = lon, y = lat, size = num_obs, color = region)) +
-  labs(colour = "Regions", size = "Records")+
+  geom_point(data = cities, aes(x = lon, y = lat, size = num_obs, color = region2)) +
+  labs(colour = "Regional Group", size = "Records")+
+  guides(colour = guide_legend(reverse = TRUE, order = 1))+
   geom_text_repel(data = cities, aes(x = lon, y = lat, label = official_hometown))
 
 # Save it for export
@@ -263,29 +266,14 @@ all_inat %>%
   group_by(region) %>%
   summarise (num_obs = n_distinct (id)) 
 
+
 source('functions/cc_functions.r')
-
-tab_all <- adonis.table(all_inat) %>% 
-  mutate (urban_intensity = "all")
-tab_natural <- adonis.table(all_inat %>% filter (nlcd_group2 == "natural")) %>% 
-  mutate (urban_intensity = "natural")
-tab_os <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed1_open_space")) %>% 
-  mutate (urban_intensity = "developed - open space")
-tab_2 <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed2_low_intensity")) %>% 
-  mutate (urban_intensity = "developed - low intensity")
-tab_3 <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed3_medium_intensity")) %>% 
-  mutate (urban_intensity = "developed - medium intensity")
-tab_4 <- adonis.table(all_inat %>% filter (nlcd_group2 == "developed4_high_intensity")) %>% 
-  mutate (urban_intensity = "developed - high intensity")
-tab <- bind_rows(tab_natural, tab_os, tab_2, tab_3, tab_4)
-return(tab)
-
 tab_all <- knit_tables(all_inat) %>% mutate (taxon = "all")
 tab_plants <- knit_tables(plants) %>% mutate (taxon = "plants")
 tab_animals <- knit_tables(animals) %>% mutate (taxon = "animals")
 tab <- bind_rows(tab_all, tab_plants, tab_animals) 
 tab
-
+write.csv(tab, "figures_n_tables/permanova_results_urban_intensity.csv")       # Table 4
 
 
 tab_open_to_high <- adonis.table(all_inat %>% filter (nlcd_group != "natural")) %>% 
