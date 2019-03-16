@@ -19,8 +19,7 @@ library(stringr)
 # load files
 load('data/all_inat.Rdata')
 cities <- read.csv("city_data.csv")
-save(cities, file = "data/cities.RData") # needs to get worked out
-load('data/cities.RdData')
+
 
 # source files
 source('functions/isp_functions.r')
@@ -48,7 +47,7 @@ all_inat$scientific_name <- str_replace(all_inat$scientific_name,"Columba livia 
 all_inat$scientific_name <- as.factor(all_inat$scientific_name)
 
 # link city data
-cities <- select(cities, c(hometown, lat, lon, region, official_hometown))
+cities <- select(cities, c(hometown, lat, lon, region, region2, official_hometown))
 all_inat <- all_inat %>%
   left_join(cities, by = "hometown")
 
@@ -265,6 +264,15 @@ all_inat %>%
 all_inat %>%
   group_by(region) %>%
   summarise (num_obs = n_distinct (id)) 
+all_inat2 <- all_inat %>%
+  filter(hometown != "miami")%>%
+  filter(hometown != "raleigh")
+plants2 <- plants%>%
+  filter(hometown != "miami")%>%
+  filter(hometown != "raleigh")
+animals2 <- animals %>%
+  filter(hometown != "miami")%>%
+  filter(hometown != "raleigh")
 
 
 source('functions/cc_functions.r')

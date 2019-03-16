@@ -220,7 +220,7 @@ plot_cc_region_4 <- function (taxon, title) {
 adonis_cc <- function (all_matrix) {
   all_env <- cc_env(all_matrix) %>%
     left_join(cities, by = "hometown")
-  perm <- adonis(all_matrix ~ all_env$region, data = all_env, permutations = 999)
+  perm <- adonis(all_matrix ~ all_env$region2, data = all_env, permutations = 999)
   return (perm)
 }
 
