@@ -276,11 +276,11 @@ animals2 <- animals %>%
 
 
 source('functions/cc_functions.r')
-tab_all <- knit_tables(all_inat) %>% mutate (taxon = "all")
-tab_plants <- knit_tables(plants) %>% mutate (taxon = "plants")
-tab_animals <- knit_tables(animals) %>% mutate (taxon = "animals")
-tab <- bind_rows(tab_all, tab_plants, tab_animals) 
-tab
+tab_all <- knit_tables(all_inat2) %>% mutate (taxon = "all")
+tab_plants <- knit_tables(plants2) %>% mutate (taxon = "plants")
+tab_animals <- knit_tables(animals2) %>% mutate (taxon = "animals")
+tab2 <- bind_rows(tab_all, tab_plants, tab_animals) 
+tab2
 write.csv(tab, "figures_n_tables/permanova_results_urban_intensity.csv")       # Table 4
 
 
