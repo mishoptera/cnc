@@ -281,28 +281,7 @@ tab_plants <- knit_tables(plants2) %>% mutate (taxon = "plants")
 tab_animals <- knit_tables(animals2) %>% mutate (taxon = "animals")
 tab2 <- bind_rows(tab_all, tab_plants, tab_animals) 
 tab2
-write.csv(tab, "figures_n_tables/permanova_results_urban_intensity.csv")       # Table 4
-
-
-tab_open_to_high <- adonis.table(all_inat %>% filter (nlcd_group != "natural")) %>% 
-  mutate (urban_intensity = "developed (open space to high intensity)")
-tab_low_to_high <- adonis.table(all_inat %>% filter (nlcd_group2 %in% c("developed2_low_intensity", 
-                                                                        "developed3_medium_intensity",
-                                                                        "developed4_high_intensity"))) %>% 
-  mutate (urban_intensity = "developed (low to high intensity)")
-tab_medium_to_high <- adonis.table(animals %>% filter (nlcd_group2 %in% c("developed3_medium_intensity",
-                                                                        "developed4_high_intensity"))) %>% 
-  mutate (urban_intensity = "developed (medium to high intensity)")
-tab <- bind_rows(tab_natural, tab_open_to_high, tab_low_to_high, tab_medium_to_high)
-tab
-# Realized a mistake.  The table of decreasing AIC scores was not telling me what I thought it was.
-# In fact, as AIC's went down with increasing urban intensity, the exact opposite of what we would
-# expect was happening. Community compositions were becoming MORE PREDICATABLE based on hometown!
-# I think the issue is that by including multiple land use categories, the sample size was increasing
-# so effect was artifiial (although still a lower AIC score from open to low to medium so not sure
-# what that's about.  Way around this is to subset by region perhaps.)
-
-write.csv(tab, "figures_n_tables/permanova_results_urban intensity.csv")       # Table 3
+write.csv(tab2, "figures_n_tables/permanova_results_urban intensity.csv")       # Table 3
 
 
 
