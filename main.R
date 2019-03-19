@@ -179,7 +179,7 @@ everything <-all_inat %>%
           diff_obs = all_ratio_obs - subset_ratio_obs) 
 
 everything    # Birds and dicots get overrepresented in the top 100, while insects get underrepresented
-write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Table 5
+write.csv(everything, "figures_n_tables/summary_over100obs.csv")  # Supplemntary Table S1
 
 # Top10 lists for all cities
 top10_knit(plants)
@@ -212,11 +212,11 @@ big_simple_counts <- simple_birds %>%
   select(taxon, common_name, scientific_name, count, num_cities, contains("count")) 
 
 # save these files
-write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")    # Table 4 alternative
-write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_counts.csv")    # Table 4 alternative
+write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")    
+write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_counts.csv") 
 
 # *************************************************************
-# WITHIN CITY - COMMUNITY COMPOSITION (Figures 2-5, Table 2)
+# WITHIN CITY - COMMUNITY COMPOSITION (Figures 2-3, Table 3)
 # *************************************************************
 source('functions/cc_functions.r')
 
@@ -229,7 +229,7 @@ plot_cc_region_4(all_inat, "All taxa")             # Figure 3
 # All Plants
 cc_plants <- cc_matrix(plants) 
 cc_plants_env <- cc_env(cc_plants)
-plot_cc_us(cc_plants, cc_plants_env, "Plants")      # supplentary now?
+plot_cc_us(cc_plants, cc_plants_env, "Plants")      # Supplementary Figure S1
 plot_cc_region_4(plants, "Plants")
 
 # All Animals
@@ -238,26 +238,8 @@ cc_animals_env <- cc_env(cc_animals)
 plot_cc_us(cc_animals, cc_animals_env, "Animals")
 plot_cc_region_4(animals, "Animals")
 
-
-# THE FOLLOWING MIGHT BE UNNECESSARY IN LIGHT OF THE NEW USE OF PERMANOVA TESTS.
-# Create a table of PERMANOVA results for all taxa in all regions, nested by hometown.
-tab_all <- adonis.table.hometown(all_inat) %>% mutate (taxon = "all")
-tab_plants <- adonis.table.hometown(plants) %>% mutate (taxon = "plants")
-tab_animals <- adonis.table.hometown(animals) %>% mutate (taxon = "animals")
-tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "figures_n_tables/permanova_results_hometown.csv") 
-
-# Create a table of PERMANOVA results for all taxa in all regions, nested by land cover type.
-tab_all <- adonis.table.lc(all_inat) %>% mutate (taxon = "all")
-tab_plants <- adonis.table.lc(plants) %>% mutate (taxon = "plants")
-tab_animals <- adonis.table.lc(animals) %>% mutate (taxon = "animals")
-tab <- bind_rows(tab_all, tab_plants, tab_animals)
-write.csv(tab, "figures_n_tables/permanova_results_lc.csv")    
-
-# Create a table of PERMANOVA results of filtered observations of increasing urban intensity
-# to see if there is less explanation by region as we increase urbanization intensity (nesting
-# is by hometown because we are only interested in how landcover explanations change)
-# how many observation per land cover type?
+# PERMANOVA results of filtered observations of increasing urban intensity
+# to see if there is less explanation by region as we increase urbanization intensity
 all_inat %>%
   group_by(nlcd_group2) %>%
   summarise (num_obs = n_distinct (id)) 
@@ -281,7 +263,7 @@ tab_plants <- knit_tables(plants2) %>% mutate (taxon = "plants")
 tab_animals <- knit_tables(animals2) %>% mutate (taxon = "animals")
 tab2 <- bind_rows(tab_all, tab_plants, tab_animals) 
 tab2
-write.csv(tab2, "figures_n_tables/permanova_results_urban intensity.csv")       # Table 2
+write.csv(tab2, "figures_n_tables/permanova_results_urban intensity.csv")       # Table 3
 
 
 
