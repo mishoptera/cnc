@@ -216,7 +216,7 @@ write.csv(big_simple_ranks, "figures_n_tables/big_over4cities_simple_ranks.csv")
 write.csv(big_simple_counts, "figures_n_tables/big_over4cities_simple_counts.csv")    # Table 4 alternative
 
 # *************************************************************
-# WITHIN CITY - COMMUNITY COMPOSITION (Figures 2-5, Tables 3 & 4)
+# WITHIN CITY - COMMUNITY COMPOSITION (Figures 2-5, Table 2)
 # *************************************************************
 source('functions/cc_functions.r')
 
@@ -281,7 +281,7 @@ tab_plants <- knit_tables(plants2) %>% mutate (taxon = "plants")
 tab_animals <- knit_tables(animals2) %>% mutate (taxon = "animals")
 tab2 <- bind_rows(tab_all, tab_plants, tab_animals) 
 tab2
-write.csv(tab2, "figures_n_tables/permanova_results_urban intensity.csv")       # Table 3
+write.csv(tab2, "figures_n_tables/permanova_results_urban intensity.csv")       # Table 2
 
 
 
