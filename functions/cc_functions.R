@@ -81,7 +81,7 @@ plot_cc_us <- function (all_matrix, all_env, title) {
   data_scores$landcover <- cc_all_env$landcover_group
   stress <- signif(mod$stress, digits = 3)
   subtitle <- paste("2-D Stress =", stress)
-  cities_mod <- select(cities, c(hometown, lat, lon, region, official_hometown))
+  cities_mod <- select(cities, c(hometown, lat, lon, region2, official_hometown))
   data_scores <- left_join(data_scores, cities_mod, by = "hometown")
   nice_lc <- tibble(landcover = c("natural", "developed1_open_space", 
                                   "developed2_low_intensity", "developed3_medium_intensity",
@@ -94,11 +94,11 @@ plot_cc_us <- function (all_matrix, all_env, title) {
   
   # create city grouping plot
   cg <- ggplot()+
-    geom_point(data=data_scores,aes(x=NMDS1,y=NMDS2,shape=urbanization,colour=region),size=3) + 
-    labs (fill = "Regions", colour = "Regions", shape = "Urbanization Levels") +
+    geom_point(data=data_scores,aes(x=NMDS1,y=NMDS2,shape=urbanization,colour=region2),size=3) + 
+    labs (fill = "regions", colour = "Regions", shape = "Urbanization Levels") +
     labs(title = "City groupings", subtitle = subtitle) +
     stat_chull(data=data_scores, geom = "polygon", alpha = 0.1, aes(x=NMDS1,y=NMDS2,
-                                                                    fill=region, colour = region, group=hometown)) +
+                                                                    fill=region2, colour = region2, group=hometown)) +
     geom_text_repel(data=data_scores_d3, aes(x=NMDS1, y=NMDS2, label=official_hometown)) +
     theme_bw() +
     coord_equal() +
@@ -114,7 +114,7 @@ plot_cc_us <- function (all_matrix, all_env, title) {
   
   # plot it for landcover grouping
   lc <- ggplot()+
-    geom_point(data=data_scores,aes(x=NMDS1,y=NMDS2,shape=region, col=urbanization),size=3) + 
+    geom_point(data=data_scores,aes(x=NMDS1,y=NMDS2,shape=region2, col=urbanization),size=3) + 
     labs (shape = "Regions", colour = "Urbanization Levels", fill = "Urbanization Levels") +
     labs(title = "Land cover groupings", subtitle = subtitle) +
     stat_chull(data=data_scores, geom = "polygon", alpha = 0.1, aes(x=NMDS1,y=NMDS2,
@@ -151,7 +151,7 @@ plot_cc_region <- function (all_matrix, title) {
   data_scores$landcover <- all_env$landcover_group
   stress <- signif(mod_all$stress, digits = 3)
   subtitle <- paste("2-D Stress =", stress)
-  cities <- select(cities, c(hometown, lat, lon, region, official_hometown))
+  cities <- select(cities, c(hometown, lat, lon, region2, official_hometown))
   data_scores <- left_join(data_scores, cities, by = "hometown")
   nice_lc <- tibble(landcover = c("natural", "developed1_open_space", 
                                   "developed2_low_intensity", "developed3_medium_intensity", "developed4_high_intensity"), 
