@@ -102,6 +102,7 @@ plot_cc_us <- function (all_matrix, all_env, title) {
     geom_text_repel(data=data_scores_d3, aes(x=NMDS1, y=NMDS2, label=official_hometown)) +
     theme_bw() +
     coord_equal() +
+    guides(colour = guide_legend(reverse = TRUE, order = 1))+
     theme(axis.text.x = element_blank(),  # remove x-axis text
           axis.text.y = element_blank(), # remove y-axis text
           axis.ticks = element_blank(),  # remove axis ticks
@@ -122,6 +123,7 @@ plot_cc_us <- function (all_matrix, all_env, title) {
     geom_text_repel(data=data_scores_d3, aes(x=NMDS1, y=NMDS2, label=official_hometown)) +
     theme_bw() +
     coord_equal() +
+    guides(colour = guide_legend(reverse = TRUE, order = 1))+
     theme(axis.text.x = element_blank(),  # remove x-axis text
           axis.text.y = element_blank(), # remove y-axis text
           axis.ticks = element_blank(),  # remove axis ticks
